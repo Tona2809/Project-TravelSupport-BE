@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,8 +45,19 @@ public class UserEntity {
 
     private boolean active;
 
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "\"user_like_stay\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"stay_id\""))
+    private Set<StayEntity> stayLiked;
+
+    public Set<StayEntity> getStayLiked() {
+        return stayLiked;
+    }
+
+    public void setStayLiked(Set<StayEntity> stayLiked) {
+        this.stayLiked = stayLiked;
+    }
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "\"user_role\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"role_id\""))
     private Set<RoleEntity> roles;
 
@@ -53,6 +65,21 @@ public class UserEntity {
         this.password = password;
         this.phone = phone;
     }
+    @OneToMany(mappedBy = "host",targetEntity = StayEntity.class,cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<StayEntity> stayOwner;
+
+
+
+
+    public Set<StayEntity> getStayOwner() {
+        return stayOwner;
+    }
+
+    public void setStayOwner(Set<StayEntity> stayOwner) {
+        this.stayOwner = stayOwner;
+    }
+
 
     public String getId() {
         return id;

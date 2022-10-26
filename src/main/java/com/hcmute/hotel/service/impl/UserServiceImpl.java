@@ -55,4 +55,9 @@ private final UserRepository userRepository;
             return null;
         return user.get();
     }
+
+    @Override
+    public UserEntity save(UserEntity user) {
+        return userRepository.save(user);
+    }
 }
