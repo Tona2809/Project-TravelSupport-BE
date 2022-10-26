@@ -7,7 +7,6 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @RestResource(exported = false)
@@ -60,6 +59,14 @@ public class UserEntity {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "\"user_role\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"role_id\""))
     private Set<RoleEntity> roles;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userReview")
+    @JsonIgnore
+    private  Set<ReviewEntity> listReview;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userRating")
+    @JsonIgnore
+    private  Set<HotelRatingEntity> listRating;
 
     public UserEntity(String password, String phone) {
         this.password = password;
@@ -152,6 +159,7 @@ public class UserEntity {
     public void setRoles(Set<RoleEntity> roles) {
         this.roles = roles;
     }
+
 
     public UserEntity() {
     }
