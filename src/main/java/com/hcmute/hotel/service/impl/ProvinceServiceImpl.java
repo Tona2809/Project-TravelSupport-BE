@@ -48,4 +48,11 @@ public class ProvinceServiceImpl implements ProvinceService {
             return false;
         else return true;
     }
+    @Override
+    public boolean findByNameAndId(String name, int id) {
+        List<ProvinceEntity> provinceEntityList = provinceRepository.findByNameAndId(name, id);
+        if (provinceEntityList.size() == 0)
+            return false;
+        else return true;
+    }
 }

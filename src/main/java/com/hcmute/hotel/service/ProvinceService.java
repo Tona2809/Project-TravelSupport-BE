@@ -18,5 +18,7 @@ public interface ProvinceService {
     void deleteById(int id);
 
     boolean findByName(String name);
+
+    boolean findByNameAndId(String name, int id);
 }
 

@@ -94,7 +94,7 @@ public class ProvinceController {
             }
             else {
                 response.setStatus(HttpStatus.BAD_REQUEST.value());
-                response.setMessage("Tồn tại tên tỉnh");
+                response.setMessage("province name is existed");
                 response.setSuccess(false);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
@@ -121,13 +121,22 @@ public class ProvinceController {
                 response.setSuccess(false);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            province = ProvinceMapping.updateProvinceToEntity(updateProvinceRequest);
-            provinceService.saveProvince(province);
-            response.setStatus(HttpStatus.OK.value());
-            response.setMessage("Update province successfully");
-            response.setSuccess(true);
-            response.getData().put("province", province);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            boolean isExisted = provinceService.findByNameAndId(updateProvinceRequest.getName(), id);
+            if(!isExisted) {
+                province = ProvinceMapping.updateProvinceToEntity(updateProvinceRequest, province);
+                provinceService.saveProvince(province);
+                response.setStatus(HttpStatus.OK.value());
+                response.setMessage("Update province successfully");
+                response.setSuccess(true);
+                response.getData().put("province", province);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+            else {
+                response.setStatus(HttpStatus.BAD_REQUEST.value());
+                response.setMessage("province name is existed");
+                response.setSuccess(false);
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
         } else throw new BadCredentialsException("access token is missing");
     }
 

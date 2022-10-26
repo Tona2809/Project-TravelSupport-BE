@@ -19,8 +19,7 @@ public class ProvinceMapping {
         return province;
     }
 
-    public static ProvinceEntity updateProvinceToEntity(UpdateProvinceRequest updateProvinceRequest) {
-        ProvinceEntity province = new ProvinceEntity();
+    public static ProvinceEntity updateProvinceToEntity(UpdateProvinceRequest updateProvinceRequest, ProvinceEntity province) {
         province.setName(updateProvinceRequest.getName());
         LocalDateTime time = LocalDateTime.now();
         province.setHidden(updateProvinceRequest.isHidden());
