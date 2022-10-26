@@ -1,17 +1,15 @@
 package com.hcmute.hotel.controller;
 
 import com.hcmute.hotel.handler.MethodArgumentNotValidException;
-import com.hcmute.hotel.model.entity.HotelRatingEntity;
-import com.hcmute.hotel.model.entity.ReviewEntity;
+import com.hcmute.hotel.model.entity.StayEntity;
+import com.hcmute.hotel.model.entity.StayRatingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
 import com.hcmute.hotel.model.payload.request.HotelRating.AddNewHotelRatingRequest;
 import com.hcmute.hotel.model.payload.request.HotelRating.UpdateHotelRatingRequest;
-import com.hcmute.hotel.model.payload.request.Review.AddNewReviewRequest;
-import com.hcmute.hotel.model.payload.request.Review.UpdateReviewRequest;
 import com.hcmute.hotel.security.JWT.JwtUtils;
-import com.hcmute.hotel.service.HotelRatingService;
-import com.hcmute.hotel.service.ReviewService;
+import com.hcmute.hotel.service.StayRatingService;
+import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +29,10 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RestController
 @RequestMapping("/api/hotelrating")
 @RequiredArgsConstructor
-public class HotelRatingController {
+public class StayRatingController {
     private final UserService userService;
-    private final HotelRatingService hotelRatingService;
+    private final StayRatingService stayRatingService;
+    private final StayService stayService;
     @Autowired
     JwtUtils jwtUtils;
     @PostMapping("/add")
@@ -45,7 +44,6 @@ public class HotelRatingController {
         SuccessResponse response = new SuccessResponse();
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String accessToken = authorizationHeader.substring("Bearer ".length());
-
             if (jwtUtils.validateExpiredToken(accessToken) == true) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.setMessage("access token is expired");
@@ -60,7 +58,15 @@ public class HotelRatingController {
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
             else {
-                HotelRatingEntity hotelRating=hotelRatingService.saveHotelRating(addNewHotelRatingRequest,user);
+                StayEntity stay = stayService.getStayById(addNewHotelRatingRequest.getHotel());
+                if (stay.getHost()==user)
+                {
+                    response.setStatus(HttpStatus.FOUND.value());
+                    response.setMessage("You can't vote for your own stay");
+                    response.setSuccess(false);
+                    return new ResponseEntity<>(response, HttpStatus.FOUND);
+                }
+                StayRatingEntity hotelRating= stayRatingService.saveHotelRating(addNewHotelRatingRequest,user);
                 response.setStatus(HttpStatus.OK.value());
                 response.setMessage("Add HotelRating successfully");
                 response.setSuccess(true);
@@ -97,7 +103,7 @@ public class HotelRatingController {
                 response.setSuccess(false);
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
-            HotelRatingEntity foundHotelRating =hotelRatingService.getHotelRatingById(updateHotelRatingRequest.getId());
+            StayRatingEntity foundHotelRating = stayRatingService.getHotelRatingById(updateHotelRatingRequest.getId());
             if(foundHotelRating==null){
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Can't found HotelRating with id:"+updateHotelRatingRequest.getId());
@@ -105,7 +111,7 @@ public class HotelRatingController {
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
 
-           HotelRatingEntity hotelRating =hotelRatingService.updateHotelRating(updateHotelRatingRequest);
+           StayRatingEntity hotelRating = stayRatingService.updateHotelRating(updateHotelRatingRequest);
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Update HotelRating successfully");
             response.setSuccess(true);
@@ -120,7 +126,7 @@ public class HotelRatingController {
     }
     @GetMapping("/{id}")
     public ResponseEntity<SuccessResponse>getHotelRatingById(@PathVariable("id")String id){
-        HotelRatingEntity hotelRating= hotelRatingService.getHotelRatingById(id);
+        StayRatingEntity hotelRating= stayRatingService.getHotelRatingById(id);
         SuccessResponse response = new SuccessResponse();
         if(hotelRating==null)
         {
@@ -137,7 +143,7 @@ public class HotelRatingController {
     }
     @GetMapping("/getall")
     public ResponseEntity<SuccessResponse> getAllHotelRating() {
-        List<HotelRatingEntity> listHotelRating = hotelRatingService.getAllHotelRating();
+        List<StayRatingEntity> listHotelRating = stayRatingService.getAllHotelRating();
         SuccessResponse response = new SuccessResponse();
         if (listHotelRating.size() == 0) {
             response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -165,7 +171,7 @@ public class HotelRatingController {
                 response.setSuccess(false);
                 return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
             }
-            hotelRatingService.deleteById(listHotelRatingId);
+            stayRatingService.deleteById(listHotelRatingId);
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Delete HotelRating successfully");
             response.setSuccess(true);

@@ -5,7 +5,6 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -66,7 +65,15 @@ public class UserEntity {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userRating")
     @JsonIgnore
-    private  Set<HotelRatingEntity> listRating;
+    private  Set<StayRatingEntity> listRating;
+
+    public Set<StayRatingEntity> getListRating() {
+        return listRating;
+    }
+
+    public void setListRating(Set<StayRatingEntity> listRating) {
+        this.listRating = listRating;
+    }
 
     public UserEntity(String password, String phone) {
         this.password = password;

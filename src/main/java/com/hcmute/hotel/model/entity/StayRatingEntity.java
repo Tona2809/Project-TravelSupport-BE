@@ -1,5 +1,6 @@
 package com.hcmute.hotel.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "\"hotel_rating\"")
 @NoArgsConstructor
-public class HotelRatingEntity {
+public class StayRatingEntity {
     @Id
     @GeneratedValue(
             generator = "UUID"
@@ -29,17 +30,18 @@ public class HotelRatingEntity {
     private UserEntity userRating;
     @Column(name = "\"message\"")
     private String message;
-    //sua lai sau khi co hotel
-    @Column(name = "\"hotel\"")
-    private String hotel;
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "\"stay_id\"")
+    private StayEntity stay;
     @Column(name = "\"created_at\"")
     private LocalDateTime created_at;
 
-    public HotelRatingEntity(String id, int rate, UserEntity userRating, String hotel, LocalDateTime created_at,String message) {
+    public StayRatingEntity(String id, int rate, UserEntity userRating, StayEntity hotel, LocalDateTime created_at, String message) {
         this.id = id;
         this.rate = rate;
         this.userRating = userRating;
-        this.hotel = hotel;
+        this.stay = hotel;
         this.created_at = created_at;
         this.message=message;
     }
@@ -68,12 +70,12 @@ public class HotelRatingEntity {
         this.userRating = userRating;
     }
 
-    public String getHotel() {
-        return hotel;
+    public StayEntity getStay() {
+        return stay;
     }
 
-    public void setHotel(String hotel) {
-        this.hotel = hotel;
+    public void setStay(StayEntity stay) {
+        this.stay = stay;
     }
 
     public LocalDateTime getCreated_at() {

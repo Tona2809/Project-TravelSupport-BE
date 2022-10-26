@@ -1,13 +1,14 @@
 package com.hcmute.hotel.service.impl;
 
-import com.hcmute.hotel.model.entity.HotelRatingEntity;
-import com.hcmute.hotel.model.entity.ReviewEntity;
+import com.hcmute.hotel.model.entity.StayRatingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.request.HotelRating.AddNewHotelRatingRequest;
 import com.hcmute.hotel.model.payload.request.HotelRating.UpdateHotelRatingRequest;
-import com.hcmute.hotel.repository.HotelRatingRepository;
+import com.hcmute.hotel.repository.StayRatingRepository;
+import com.hcmute.hotel.repository.StayRepository;
 import com.hcmute.hotel.repository.UserRepository;
-import com.hcmute.hotel.service.HotelRatingService;
+import com.hcmute.hotel.service.StayRatingService;
+import com.hcmute.hotel.service.StayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,14 +20,15 @@ import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class HotelRatingServiceImpl implements HotelRatingService {
+public class StayRatingServiceImpl implements StayRatingService {
     private final UserRepository userRepository;
-    private final HotelRatingRepository hotelRatingRepository;
+    private final StayRatingRepository hotelRatingRepository;
+    private final StayService stayService;
     @Override
-    public HotelRatingEntity saveHotelRating(AddNewHotelRatingRequest addNewHotelRatingRequest, UserEntity user) {
-        HotelRatingEntity hotelRating =new HotelRatingEntity();
+    public StayRatingEntity saveHotelRating(AddNewHotelRatingRequest addNewHotelRatingRequest, UserEntity user) {
+        StayRatingEntity hotelRating =new StayRatingEntity();
         hotelRating.setMessage(addNewHotelRatingRequest.getMessage());
-        hotelRating.setHotel(addNewHotelRatingRequest.getHotel());
+        hotelRating.setStay(stayService.getStayById(addNewHotelRatingRequest.getHotel()));
         hotelRating.setRate(addNewHotelRatingRequest.getRate());
         hotelRating.setCreated_at(LocalDateTime.now());
         hotelRating.setUserRating(user);
@@ -34,22 +36,22 @@ public class HotelRatingServiceImpl implements HotelRatingService {
     }
 
     @Override
-    public HotelRatingEntity updateHotelRating(UpdateHotelRatingRequest updateHotelRatingRequest) {
-        HotelRatingEntity hotelRating =getHotelRatingById(updateHotelRatingRequest.getId());
+    public StayRatingEntity updateHotelRating(UpdateHotelRatingRequest updateHotelRatingRequest) {
+        StayRatingEntity hotelRating =getHotelRatingById(updateHotelRatingRequest.getId());
         hotelRating.setMessage(updateHotelRatingRequest.getMessage());
         hotelRating.setRate(updateHotelRatingRequest.getRate());
         return hotelRatingRepository.save(hotelRating);
     }
 
     @Override
-    public List<HotelRatingEntity> getAllHotelRating() {
-        List<HotelRatingEntity>listHotelRating =hotelRatingRepository.findAll();
+    public List<StayRatingEntity> getAllHotelRating() {
+        List<StayRatingEntity>listHotelRating =hotelRatingRepository.findAll();
         return listHotelRating;
     }
 
     @Override
-    public HotelRatingEntity getHotelRatingById(String id) {
-        Optional<HotelRatingEntity> hotelRating =hotelRatingRepository.findById(id);
+    public StayRatingEntity getHotelRatingById(String id) {
+        Optional<StayRatingEntity> hotelRating =hotelRatingRepository.findById(id);
         if(hotelRating.isEmpty())
             return null;
         return  hotelRating.get();

@@ -73,6 +73,16 @@ public class StayEntity {
     @ManyToOne()
     @JoinColumn(name = "\"province\"")
     private ProvinceEntity province;
+    @OneToMany(mappedBy = "stay",targetEntity = StayRatingEntity.class,cascade = CascadeType.ALL)
+    private Set<StayRatingEntity> stayRating;
+
+    public Set<StayRatingEntity> getStayRating() {
+        return stayRating;
+    }
+
+    public void setStayRating(Set<StayRatingEntity> stayRating) {
+        this.stayRating = stayRating;
+    }
 
     public ProvinceEntity getProvince() {
         return province;
