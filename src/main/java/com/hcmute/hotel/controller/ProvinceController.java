@@ -66,7 +66,7 @@ public class ProvinceController {
         response.setStatus(HttpStatus.OK.value());
         response.setMessage("Query Successfully");
         response.setSuccess(true);
-        response.getData().put("province:", provinceEntity);
+        response.getData().put("province", provinceEntity);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

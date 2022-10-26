@@ -1,6 +1,8 @@
 package com.hcmute.hotel.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -27,6 +29,7 @@ public class StayRatingEntity {
     private int rate;
     @ManyToOne()
     @JoinColumn(name = "\"user\"")
+    @JsonIgnore
     private UserEntity userRating;
     @Column(name = "\"message\"")
     private String message;
@@ -34,6 +37,8 @@ public class StayRatingEntity {
     @JsonIgnore
     @JoinColumn(name = "\"stay_id\"")
     private StayEntity stay;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    @ApiModelProperty(required = true, example = "2021-08-20T00:00:00")
     @Column(name = "\"created_at\"")
     private LocalDateTime created_at;
 

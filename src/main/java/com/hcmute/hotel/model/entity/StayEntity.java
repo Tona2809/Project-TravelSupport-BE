@@ -73,7 +73,19 @@ public class StayEntity {
     @ManyToOne()
     @JoinColumn(name = "\"province\"")
     private ProvinceEntity province;
+    @Column(name = "\"hidden\"")
+    private boolean hidden;
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
+
     @OneToMany(mappedBy = "stay",targetEntity = StayRatingEntity.class,cascade = CascadeType.ALL)
+
     private Set<StayRatingEntity> stayRating;
 
     public Set<StayRatingEntity> getStayRating() {
