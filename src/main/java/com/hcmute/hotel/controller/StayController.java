@@ -3,6 +3,7 @@ package com.hcmute.hotel.controller;
 import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.mapping.StayMapping;
 import com.hcmute.hotel.model.entity.AmenitiesEntity;
+import com.hcmute.hotel.model.entity.ProvinceEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
@@ -10,6 +11,7 @@ import com.hcmute.hotel.model.payload.request.Stay.AddNewStayRequest;
 import com.hcmute.hotel.model.payload.request.Stay.UpdateStayRequest;
 import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.AmenitiesService;
+import com.hcmute.hotel.service.ProvinceService;
 import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.UserService;
 import io.swagger.annotations.ApiOperation;
@@ -38,6 +40,7 @@ public class StayController {
     private final StayService stayService;
     private final AmenitiesService amenitiesService;
     private final UserService userService;
+    private final ProvinceService provinceService;
     @PostMapping("/addStay")
     public ResponseEntity<SuccessResponse> addStay(HttpServletRequest req, @Valid @RequestBody AddNewStayRequest addNewStayRequest)
     {
@@ -47,6 +50,15 @@ public class StayController {
             user = authenticateHandler.authenticateUser(req);
             StayEntity stay = StayMapping.addReqToEntity(addNewStayRequest, user);
             stay.setCreatedAt(LocalDateTime.now());
+            ProvinceEntity province = provinceService.getProvinceById(addNewStayRequest.getProvinceId());
+            if (province==null)
+            {
+                response.setMessage("Can't find Province with id" + addNewStayRequest.getProvinceId());
+                response.setStatus(HttpStatus.FOUND.value());
+                response.setSuccess(false);
+                return new ResponseEntity<>(response,HttpStatus.FOUND);
+            }
+            stay.setProvince(province);
             stay = stayService.saveStay(stay);
             response.setStatus(HttpStatus.OK.value());
             response.setSuccess(true);
@@ -155,6 +167,9 @@ public class StayController {
                 {
                     tempUser.getStayLiked().remove(stay);
                 }
+                ProvinceEntity province = provinceService.getProvinceById(stay.getProvince().getId());
+                if (province!=null)
+                province.getStay().remove(province);
                 stayService.deleteStay(id);
                 response.setStatus(HttpStatus.OK.value());
                 response.setSuccess(true);

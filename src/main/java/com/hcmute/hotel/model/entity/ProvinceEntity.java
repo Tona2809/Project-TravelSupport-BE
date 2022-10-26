@@ -1,8 +1,12 @@
 package com.hcmute.hotel.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @RestResource(exported = false)
 @Entity
@@ -14,20 +18,33 @@ public class ProvinceEntity {
     @Column(name = "\"id\"")
     private int id;
 
-    @Column(name = "name")
+    @Column(name = "\"name\"")
     private String name;
 
-    @Column(name = "place_count")
+    @Column(name = "\"place_count\"")
     private int placeCount;
 
-    @Column(name = "is_hidden")
+    @Column(name = "\"is_hidden\"")
     private boolean isHidden;
-
-    @Column(name = "create_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    @ApiModelProperty(required = true, example = "2021-08-20T00:00:00")
+    @Column(name = "\"create_at\"")
     private LocalDateTime createAt;
-
-    @Column(name = "update_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    @ApiModelProperty(required = true, example = "2021-08-20T00:00:00")
+    @Column(name = "\"update_at\"")
     private LocalDateTime updateAt;
+    @OneToMany(mappedBy = "province",targetEntity = StayEntity.class)
+    @JsonIgnore
+    private Set<StayEntity> stay;
+
+    public Set<StayEntity> getStay() {
+        return stay;
+    }
+
+    public void setStay(Set<StayEntity> stay) {
+        this.stay = stay;
+    }
 
     public int getId() {
         return id;

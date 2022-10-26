@@ -10,7 +10,6 @@ public class StayMapping {
     {
         StayEntity stayEntity = new StayEntity();
         stayEntity.setName(addNewStayRequest.getName());
-        stayEntity.setProvinceId(addNewStayRequest.getProvinceId());
         stayEntity.setAddressDescription(addNewStayRequest.getAddressDescription());
         stayEntity.setStayDescription(addNewStayRequest.getStayDescription());
         stayEntity.setTimeOpen(addNewStayRequest.getTimeOpen());
@@ -28,7 +27,6 @@ public class StayMapping {
     public static StayEntity updateReqToEntity(UpdateStayRequest updateStayRequest,StayEntity stayEntity)
     {
         stayEntity.setName(updateStayRequest.getName());
-        stayEntity.setProvinceId(updateStayRequest.getProvinceId());
         stayEntity.setAddressDescription(updateStayRequest.getAddressDescription());
         stayEntity.setStayDescription(updateStayRequest.getStayDescription());
         stayEntity.setTimeOpen(updateStayRequest.getTimeOpen());

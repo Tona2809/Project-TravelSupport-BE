@@ -28,8 +28,6 @@ public class StayEntity {
     private String id;
     @Column(name = "\"name\"")
     private String name;
-    @Column(name = "\"province_id\"")
-    private String provinceId;
     @Column(name = "\"address_description\"")
     private String addressDescription;
     @Column(name = "\"stay_description\"")
@@ -72,6 +70,17 @@ public class StayEntity {
     @JsonIgnore
     @ManyToMany(mappedBy = "stayLiked",targetEntity = UserEntity.class)
     Set<UserEntity> userLiked;
+    @ManyToOne()
+    @JoinColumn(name = "\"province\"")
+    private ProvinceEntity province;
+
+    public ProvinceEntity getProvince() {
+        return province;
+    }
+
+    public void setProvince(ProvinceEntity province) {
+        this.province = province;
+    }
 
     public Set<UserEntity> getUserLiked() {
         return userLiked;
@@ -117,13 +126,6 @@ public class StayEntity {
         this.name = name;
     }
 
-    public String getProvinceId() {
-        return provinceId;
-    }
-
-    public void setProvinceId(String provinceId) {
-        this.provinceId = provinceId;
-    }
 
     public String getAddressDescription() {
         return addressDescription;

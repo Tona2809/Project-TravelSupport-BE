@@ -3,6 +3,7 @@ package com.hcmute.hotel.controller;
 import com.hcmute.hotel.handler.MethodArgumentNotValidException;
 import com.hcmute.hotel.mapping.ProvinceMapping;
 import com.hcmute.hotel.model.entity.ProvinceEntity;
+import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
 import com.hcmute.hotel.model.payload.request.Province.AddNewProvinceRequest;
 import com.hcmute.hotel.model.payload.request.Province.UpdateProvinceRequest;
@@ -143,11 +144,16 @@ public class ProvinceController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<SuccessResponse> deleteProvinceById(@PathVariable("id") int id, HttpServletRequest httpServletRequest) {
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
+        ProvinceEntity province=provinceService.getProvinceById(id);
         SuccessResponse response = new SuccessResponse();
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String accessToken = authorizationHeader.substring("Bearer ".length());
             if (jwtUtils.validateExpiredToken(accessToken) == true) {
                 throw new BadCredentialsException("access token is  expired");
+            }
+            for (StayEntity stay : province.getStay())
+            {
+                stay.setProvince(null);
             }
             provinceService.deleteById(id);
             response.setStatus(HttpStatus.OK.value());
