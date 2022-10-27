@@ -1,11 +1,11 @@
 package com.hcmute.hotel.service.impl;
 
+import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.StayRatingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
-import com.hcmute.hotel.model.payload.request.HotelRating.AddNewHotelRatingRequest;
-import com.hcmute.hotel.model.payload.request.HotelRating.UpdateHotelRatingRequest;
+import com.hcmute.hotel.model.payload.request.StayRating.AddNewStayRatingRequest;
+import com.hcmute.hotel.model.payload.request.StayRating.UpdateStayRatingRequest;
 import com.hcmute.hotel.repository.StayRatingRepository;
-import com.hcmute.hotel.repository.StayRepository;
 import com.hcmute.hotel.repository.UserRepository;
 import com.hcmute.hotel.service.StayRatingService;
 import com.hcmute.hotel.service.StayService;
@@ -21,46 +21,52 @@ import java.util.Optional;
 @Transactional
 @RequiredArgsConstructor
 public class StayRatingServiceImpl implements StayRatingService {
-    private final UserRepository userRepository;
-    private final StayRatingRepository hotelRatingRepository;
+    private final StayRatingRepository stayRatingRepository;
     private final StayService stayService;
     @Override
-    public StayRatingEntity saveHotelRating(AddNewHotelRatingRequest addNewHotelRatingRequest, UserEntity user) {
-        StayRatingEntity hotelRating =new StayRatingEntity();
-        hotelRating.setMessage(addNewHotelRatingRequest.getMessage());
-        hotelRating.setStay(stayService.getStayById(addNewHotelRatingRequest.getHotel()));
-        hotelRating.setRate(addNewHotelRatingRequest.getRate());
-        hotelRating.setCreated_at(LocalDateTime.now());
-        hotelRating.setUserRating(user);
-        return hotelRatingRepository.save(hotelRating);
+    public StayRatingEntity saveStayRating(AddNewStayRatingRequest addNewStayRatingRequest, UserEntity user) {
+        StayRatingEntity stayRating =new StayRatingEntity();
+        stayRating.setMessage(addNewStayRatingRequest.getMessage());
+        stayRating.setStay(stayService.getStayById(addNewStayRatingRequest.getStayid()));
+        stayRating.setRate(addNewStayRatingRequest.getRate());
+        stayRating.setCreated_at(LocalDateTime.now());
+        stayRating.setUserRating(user);
+        return stayRatingRepository.save(stayRating);
     }
 
     @Override
-    public StayRatingEntity updateHotelRating(UpdateHotelRatingRequest updateHotelRatingRequest) {
-        StayRatingEntity hotelRating =getHotelRatingById(updateHotelRatingRequest.getId());
-        hotelRating.setMessage(updateHotelRatingRequest.getMessage());
-        hotelRating.setRate(updateHotelRatingRequest.getRate());
-        return hotelRatingRepository.save(hotelRating);
+    public StayRatingEntity updateStayRating(UpdateStayRatingRequest updateStayRatingRequest) {
+        StayRatingEntity stayRating =getStayRatingById(updateStayRatingRequest.getId());
+        stayRating.setMessage(updateStayRatingRequest.getMessage());
+        stayRating.setRate(updateStayRatingRequest.getRate());
+        return stayRatingRepository.save(stayRating);
     }
 
     @Override
-    public List<StayRatingEntity> getAllHotelRating() {
-        List<StayRatingEntity>listHotelRating =hotelRatingRepository.findAll();
-        return listHotelRating;
+    public List<StayRatingEntity> getAllStayRating() {
+        List<StayRatingEntity>listStayRating =stayRatingRepository.findAll();
+        return listStayRating;
     }
 
     @Override
-    public StayRatingEntity getHotelRatingById(String id) {
-        Optional<StayRatingEntity> hotelRating =hotelRatingRepository.findById(id);
-        if(hotelRating.isEmpty())
+    public StayRatingEntity getStayRatingById(String id) {
+        Optional<StayRatingEntity> stayRating =stayRatingRepository.findById(id);
+        if(stayRating.isEmpty())
             return null;
-        return  hotelRating.get();
+        return  stayRating.get();
     }
 
     @Override
     public void deleteById(List<String> ListId) {
         for (String id : ListId) {
-            hotelRatingRepository.deleteById(id);
+            stayRatingRepository.deleteById(id);
         }
+    }
+
+    @Override
+    public List<StayRatingEntity> getStayRatingByStayId(String id) {
+        StayEntity stay =stayService.getStayById(id);
+        List<StayRatingEntity> listStayRating =stayRatingRepository.findByStay(stay);
+        return listStayRating;
     }
 }

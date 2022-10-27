@@ -1,4 +1,4 @@
-package com.hcmute.hotel.model.payload.request.HotelRating;
+package com.hcmute.hotel.model.payload.request.StayRating;
 
 import lombok.Data;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import javax.validation.constraints.NotEmpty;
 @NoArgsConstructor
 @Setter
 @Getter
-public class UpdateHotelRatingRequest {
+public class UpdateStayRatingRequest {
     private static final int MIN_RATE = 0;
     private static final int MAX_RATE =5;
     @NotEmpty(message = "id không được để trống")
