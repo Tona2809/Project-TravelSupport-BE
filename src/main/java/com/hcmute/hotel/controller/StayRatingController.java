@@ -1,6 +1,5 @@
 package com.hcmute.hotel.controller;
 
-import com.hcmute.hotel.handler.MethodArgumentNotValidException;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.StayRatingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
@@ -17,6 +16,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +38,7 @@ public class StayRatingController {
     @PostMapping("/add")
     public ResponseEntity<SuccessResponse> addHotelRating(@RequestBody @Valid AddNewHotelRatingRequest addNewHotelRatingRequest , BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
         if (errors.hasErrors()) {
-            throw new MethodArgumentNotValidException(errors);
+            throw new MethodArgumentNotValidException(null,errors);
         }
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         SuccessResponse response = new SuccessResponse();
@@ -83,7 +83,7 @@ public class StayRatingController {
     @PatchMapping("/update")
     public ResponseEntity<SuccessResponse> updateHotelRating(@Valid @RequestBody UpdateHotelRatingRequest updateHotelRatingRequest, BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
         if (errors.hasErrors()) {
-            throw new MethodArgumentNotValidException(errors);
+            throw new MethodArgumentNotValidException(null,errors);
         }
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         SuccessResponse response = new SuccessResponse();

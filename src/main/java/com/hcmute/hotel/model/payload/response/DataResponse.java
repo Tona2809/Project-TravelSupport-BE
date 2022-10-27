@@ -4,20 +4,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Map;
 
+import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ErrorResponseMap {
-    public ErrorResponseMap(String message, Map<String, String> details, int status) {
-        super();
+public class DataResponse {
+    public DataResponse(String message, Map<String, String> details, int status) {
         this.message = message;
         this.details = details;
         this.status = status;
     }
-    private Boolean success;
     private int status;
     private String message;
-    private Map<String,String> details;
+    private Map<String, String> details;
 }

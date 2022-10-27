@@ -1,6 +1,5 @@
 package com.hcmute.hotel.controller;
 
-import com.hcmute.hotel.handler.MethodArgumentNotValidException;
 import com.hcmute.hotel.mapping.ProvinceMapping;
 import com.hcmute.hotel.model.entity.ProvinceEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
@@ -16,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -73,7 +73,7 @@ public class ProvinceController {
     @PostMapping("/add")
     public ResponseEntity<SuccessResponse> addProvince(@RequestBody @Valid AddNewProvinceRequest addNewProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest) throws Exception {
         if (result.hasErrors()) {
-            throw new MethodArgumentNotValidException(result);
+            throw new MethodArgumentNotValidException(null,result);
         }
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         SuccessResponse response = new SuccessResponse();
@@ -105,7 +105,7 @@ public class ProvinceController {
     @PatchMapping("/update/{id}")
     public ResponseEntity<SuccessResponse> updateProvince(@Valid @RequestBody UpdateProvinceRequest updateProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest, @PathVariable("id") int id) throws Exception {
         if (result.hasErrors()) {
-            throw new MethodArgumentNotValidException(result);
+            throw new MethodArgumentNotValidException(null,result);
         }
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         SuccessResponse response = new SuccessResponse();
