@@ -10,6 +10,7 @@ import com.hcmute.hotel.model.payload.request.Review.UpdateReviewRequest;
 import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.ReviewService;
 import com.hcmute.hotel.service.UserService;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -35,45 +36,33 @@ public class ReviewController {
     @Autowired
     JwtUtils jwtUtils;
     @PostMapping("/add")
-    public ResponseEntity<SuccessResponse>addReview(@RequestBody @Valid AddNewReviewRequest addNewReviewRequest , BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
+    @ApiOperation("Create")
+    public ResponseEntity<Object>addReview(@RequestBody @Valid AddNewReviewRequest addNewReviewRequest , BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
         if (errors.hasErrors()) {
             throw new MethodArgumentNotValidException(errors);
         }
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
-        SuccessResponse response = new SuccessResponse();
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String accessToken = authorizationHeader.substring("Bearer ".length());
 
             if (jwtUtils.validateExpiredToken(accessToken) == true) {
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.setMessage("access token is expired");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("access token is expired", HttpStatus.UNAUTHORIZED);
             }
             UserEntity user = userService.findById(UUID.fromString(jwtUtils.getUserNameFromJwtToken(accessToken)).toString());
             if (user == null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("User not found");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
             }
             else {
                 ReviewEntity review =reviewService.saveReview(addNewReviewRequest,user);
-                response.setStatus(HttpStatus.OK.value());
-                response.setMessage("Add Review successfully");
-                response.setSuccess(true);
-                response.getData().put("Review",review);
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return new ResponseEntity<>(review, HttpStatus.OK);
             }
         } else {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setMessage("access token is missing");
-            response.setSuccess(false);
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("access token is missing", HttpStatus.UNAUTHORIZED);
         }
     }
     @PatchMapping("/update")
-    public ResponseEntity<SuccessResponse> updateLecturer(@Valid @RequestBody UpdateReviewRequest updateReviewRequest, BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
+    @ApiOperation("Update")
+    public ResponseEntity<Object> updateReview(@Valid @RequestBody UpdateReviewRequest updateReviewRequest, BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
         if (errors.hasErrors()) {
             throw new MethodArgumentNotValidException(errors);
         }

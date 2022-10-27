@@ -6,10 +6,12 @@ import com.hcmute.hotel.model.payload.SuccessResponse;
 import com.hcmute.hotel.model.payload.request.Authenticate.AddNewUserRequest;
 import com.hcmute.hotel.model.payload.request.Authenticate.PhoneLoginRequest;
 import com.hcmute.hotel.model.payload.request.Authenticate.RefreshTokenRequest;
+import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.ErrorResponseMap;
 import com.hcmute.hotel.security.DTO.AppUserDetail;
 import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.UserService;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -50,48 +52,38 @@ public class AuthenticateController {
     AuthenticationManager authenticationManager;
     @Autowired
     JwtUtils jwtUtils;
-    @PostMapping("/register")
-    public ResponseEntity<SuccessResponse> registerAccount(@RequestBody @Valid AddNewUserRequest request) {
+    @PostMapping("")
+    @ApiOperation("Create Account")
+    public ResponseEntity<Object> registerAccount(@RequestBody @Valid AddNewUserRequest request) {
         UserEntity user= UserMapping.registerToEntity(request);
-        SuccessResponse response=new SuccessResponse();
         if(userService.findByPhone(user.getPhone())!=null){
-            response.setStatus(HttpStatus.CONFLICT.value());
-            response.setMessage("Phone number has been used");
-            response.setSuccess(false);
-            return new ResponseEntity<>(response,HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new ErrorResponse("Phone number has been used"),HttpStatus.CONFLICT);
         }
 
         try{
             user=userService.register(user,"USER");
             if (user==null)
             {
-                response.setStatus(HttpStatus.CONFLICT.value());
-                response.setMessage("add user false");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response,HttpStatus.CONFLICT);
+                return new ResponseEntity<>(new ErrorResponse("add user false"),HttpStatus.CONFLICT);
             }
-            response.setStatus(HttpStatus.OK.value());
-            response.setMessage("add user successful");
-            response.setSuccess(true);
-            response.getData().put("phone",user.getPhone());
         }
         catch (Exception e){
             e.printStackTrace();
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(user.getPhone(), HttpStatus.OK);
     }
     @PostMapping("/login")
-    public ResponseEntity<SuccessResponse> login(@RequestBody @Valid PhoneLoginRequest user, BindingResult errors, HttpServletResponse resp) {
+    public ResponseEntity<Object> login(@RequestBody @Valid PhoneLoginRequest user, BindingResult errors, HttpServletResponse resp) {
         if(errors.hasErrors()) {
             return null;
         }
         if(userService.findByPhone(user.getPhone())==null) {
-            return SendErrorValid("Phone", user.getPhone()+"not found","No account found" );
+            return new ResponseEntity<>(new ErrorResponse( user.getPhone()+" not found"),HttpStatus.NOT_FOUND);
         }
 
         UserEntity loginUser=userService.findByPhone(user.getPhone());
         if(!passwordEncoder.matches(user.getPassword(),loginUser.getPassword())) {
-            return SendErrorValid("password", user.getPassword()+"not found","Wrong password" );
+            return new ResponseEntity<>(new ErrorResponse("Wrong Password"),HttpStatus.NOT_FOUND);
         }
         Authentication authentication=authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginUser.getId().toString(),user.getPassword())
