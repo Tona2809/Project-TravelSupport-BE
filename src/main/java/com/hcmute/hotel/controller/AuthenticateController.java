@@ -52,19 +52,21 @@ public class AuthenticateController {
     AuthenticationManager authenticationManager;
     @Autowired
     JwtUtils jwtUtils;
+    static String E404="Not Found";
+    static String E400="Bad Request";
     @PostMapping("")
     @ApiOperation("Create Account")
     public ResponseEntity<Object> registerAccount(@RequestBody @Valid AddNewUserRequest request) {
         UserEntity user= UserMapping.registerToEntity(request);
         if(userService.findByPhone(user.getPhone())!=null){
-            return new ResponseEntity<>(new ErrorResponse("Phone number has been used"),HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new ErrorResponse(E400,"PHONE_NUMBER_EXISTS","Phone number has been used"),HttpStatus.BAD_REQUEST);
         }
 
         try{
             user=userService.register(user,"USER");
             if (user==null)
             {
-                return new ResponseEntity<>(new ErrorResponse("add user false"),HttpStatus.CONFLICT);
+                return new ResponseEntity<>(new ErrorResponse(E404,"USER_NOT_CREATED","Add user false"),HttpStatus.NOT_FOUND);
             }
         }
         catch (Exception e){
@@ -78,12 +80,12 @@ public class AuthenticateController {
             return null;
         }
         if(userService.findByPhone(user.getPhone())==null) {
-            return new ResponseEntity<>(new ErrorResponse( user.getPhone()+" not found"),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ErrorResponse( E404,"USER_NOT_FOUND","User not found"),HttpStatus.NOT_FOUND);
         }
 
         UserEntity loginUser=userService.findByPhone(user.getPhone());
         if(!passwordEncoder.matches(user.getPassword(),loginUser.getPassword())) {
-            return new ResponseEntity<>(new ErrorResponse("Wrong Password"),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ErrorResponse(E404,"INVALID_PASSWORD","Wrong Password"),HttpStatus.NOT_FOUND);
         }
         Authentication authentication=authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginUser.getId().toString(),user.getPassword())

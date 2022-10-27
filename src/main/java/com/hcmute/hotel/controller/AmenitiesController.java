@@ -26,6 +26,9 @@ import java.util.Map;
 @RequestMapping("/api/amenities")
 @RequiredArgsConstructor
 public class AmenitiesController {
+    static String E404="Not Found";
+    static String E400="Bad Request";
+    static String E401="Unauthorized";
     private final AmenitiesService amenitiesService;
     @Autowired
     AuthenticateHandler authenticateHandler;
@@ -40,7 +43,7 @@ public class AmenitiesController {
             AmenitiesEntity amenities = amenitiesService.getAmenitiesByName(name);
             if (amenities!=null)
             {
-                return new ResponseEntity<>(new ErrorResponse("Amenities with name "+ name +" have already exists"),HttpStatus.FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E400,"AMENITIES_NAME_ALREADY_EXISTS","Amenities with same name have already exists"),HttpStatus.BAD_REQUEST);
             }
             else
             {
@@ -51,7 +54,7 @@ public class AmenitiesController {
             }
         }
         catch (BadCredentialsException e) {
-        return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
     }
     }
     @GetMapping("")
@@ -59,6 +62,7 @@ public class AmenitiesController {
     public ResponseEntity<Object> getAllAmenities()
     {
         List<AmenitiesEntity> listAmenities = amenitiesService.getAllAmenities();
+        System.out.println(E404);
         Map<String,Object> map = new HashMap<>();
         map.put("content",listAmenities);
         return new ResponseEntity<>( map,HttpStatus.OK);
@@ -70,7 +74,7 @@ public class AmenitiesController {
         AmenitiesEntity amenities= amenitiesService.getAmenitiesById(id);
         if (amenities==null || amenitiesService.getAmenitiesByName(name)!=null)
         {
-            return new ResponseEntity<>(new ErrorResponse("Amenities not found or Amenities with name " + name + " have already exists"),HttpStatus.FOUND);
+            return new ResponseEntity<>(new ErrorResponse(E400,"AMENITIES_NOT_FOUND_OR_EXISTS","Amenities not found or Amenities with same name have already exists"),HttpStatus.BAD_REQUEST);
         }
         else
         {
@@ -86,13 +90,14 @@ public class AmenitiesController {
         AmenitiesEntity amenities= amenitiesService.getAmenitiesById(id);
         if (amenities==null )
         {
-            return new ResponseEntity<>(new ErrorResponse("Amenities not found"),HttpStatus.FOUND);
+            return new ResponseEntity<>(new ErrorResponse(E404,"AMENITIES_NOT_FOUND","Amenities not found"),HttpStatus.NOT_FOUND);
         }
         for (StayEntity stay : amenities.getStays())
         {
             stay.getAmenities().remove(amenities);
         }
         amenitiesService.deleteAmenities(id);
-        return new ResponseEntity<>(new ErrorResponse("Delete amenities success"),HttpStatus.OK);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

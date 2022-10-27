@@ -38,6 +38,7 @@ import javax.validation.Valid;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +54,9 @@ public class StayController {
     private final UserService userService;
     private final ProvinceService provinceService;
     private final ObjectMapper objectMapper;
+    static String E401="Unauthorized";
+    static String E404="Not Found";
+    static String E400="Bad Request";
     @PostMapping("")
     @ApiOperation("Add")
     public ResponseEntity<Object> addStay(HttpServletRequest req, @Valid @RequestBody AddNewStayRequest addNewStayRequest)
@@ -65,14 +69,15 @@ public class StayController {
             ProvinceEntity province = provinceService.getProvinceById(addNewStayRequest.getProvinceId());
             if (province==null)
             {
-                return new ResponseEntity<>(new ErrorResponse("Can't find Province with id" + addNewStayRequest.getProvinceId()),HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E404,"PROVINCE_NOT_FOUND","Can't find Province with id provided"),HttpStatus.NOT_FOUND);
             }
             stay.setProvince(province);
             stay = stayService.saveStay(stay);
             return new ResponseEntity<>(stay, HttpStatus.OK);
         }
         catch (BadCredentialsException e) {
-        return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"),HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
     }
     }
     @GetMapping("")
@@ -80,7 +85,9 @@ public class StayController {
     public ResponseEntity<Object> getAllStay()
     {
         List<StayEntity> listStay = stayService.getAllStay();
-        return new ResponseEntity<>(listStay,HttpStatus.OK);
+        Map<String,Object> map = new HashMap<>();
+        map.put("content",listStay);
+        return new ResponseEntity<>(map,HttpStatus.OK);
     }
 //    @PatchMapping(path = "/{id}")
 //    @ApiOperation("Update")
@@ -97,7 +104,8 @@ public class StayController {
 //            }
 //            return new ResponseEntity<>(stay, HttpStatus.OK);
 //        } catch (BadCredentialsException e) {
-//            return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+//                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
 //        }
 //
 //    }
@@ -109,7 +117,7 @@ public class StayController {
         if (stay==null)
         {
 
-            return new ResponseEntity<>(new ErrorResponse("Can't find Stay with id" + id),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);
         }
         else {
             return new ResponseEntity<>(stay,HttpStatus.OK);
@@ -126,11 +134,11 @@ public class StayController {
 
             if (stay==null)
             {
-                return new ResponseEntity<>(new ErrorResponse("Can't find Stay with id:"+id),HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);
             }
             else if (user!=stay.getHost())
             {
-                return new ResponseEntity<>(new ErrorResponse("You are not stay owner"),HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_STAY_OWNER","You are not stay owner"),HttpStatus.BAD_REQUEST);
             }
             else
             {
@@ -140,7 +148,8 @@ public class StayController {
                 return new ResponseEntity<>(stay,HttpStatus.OK);
             }
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
         }
     }
     @DeleteMapping("/{id}")
@@ -151,10 +160,10 @@ public class StayController {
             user = authenticateHandler.authenticateUser(req);
             StayEntity stay = stayService.getStayById(id);
             if (stay == null) {
-                return new ResponseEntity<>(new ErrorResponse("Can't find Stay with id:" + id), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);
             }
             if (user != stay.getHost()) {
-                return new ResponseEntity<>(new ErrorResponse("You are not stay owner"), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_STAY_OWNER","You are not stay owner"),HttpStatus.BAD_REQUEST);
             } else {
                 for (UserEntity tempUser : stay.getUserLiked())
                 {
@@ -164,10 +173,11 @@ public class StayController {
                 if (province!=null)
                 province.getStay().remove(province);
                 stayService.deleteStay(id);
-                return new ResponseEntity<>(new ErrorResponse("Delete stay success"), HttpStatus.OK);
+                return new ResponseEntity<>( HttpStatus.OK);
             }
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
         }
     }
     @PostMapping("/StayAmenities/{id}")
@@ -180,19 +190,19 @@ public class StayController {
             StayEntity stay = stayService.getStayById(id);
             if (stay==null)
             {
-                return new ResponseEntity<>(new ErrorResponse("Can't find Stay with id:" + id), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);
             }
             if (user != stay.getHost()) {
-                return new ResponseEntity<>(new ErrorResponse("You are not stay owner"), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_STAY_OWNER","You are not stay owner"),HttpStatus.BAD_REQUEST);
             }
             AmenitiesEntity amenities = amenitiesService.getAmenitiesById(amenitiesId);
             if (amenities==null)
             {
-                return new ResponseEntity<>(new ErrorResponse("amenities not found with id:" + id), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E404,"AMENITIES_NOT_FOUND","Amenities not found"),HttpStatus.NOT_FOUND);
             }
             if (stay.getAmenities().add(amenities)==false)
             {
-                return new ResponseEntity<>(new ErrorResponse("This stay have that amenities"), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E400,"AMENITIES_EXISTED","This stay have that amenities"), HttpStatus.BAD_REQUEST);
             }
             else
             {
@@ -201,7 +211,8 @@ public class StayController {
             }
         }
         catch (BadCredentialsException e) {
-            return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
         }
     }
     @GetMapping("/getUser")
@@ -213,10 +224,13 @@ public class StayController {
         try {
             user = authenticateHandler.authenticateUser(req);
             List<StayEntity> listStay = stayService.getStayByUser(user);
-            return new ResponseEntity<>(listStay,HttpStatus.OK);
+            Map<String,Object> map = new HashMap<>();
+            map.put("content",listStay);
+            return new ResponseEntity<>(map,HttpStatus.OK);
         }
         catch (BadCredentialsException e) {
-            return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
         }
     }
     @PostMapping("LikeList/{id}")
@@ -229,21 +243,27 @@ public class StayController {
             StayEntity stay = stayService.getStayById(id);
             if (stay==null || stay.getHost()==user)
             {
-                return new ResponseEntity<>(new ErrorResponse("Can't find Stay or you are owner of that stay"), HttpStatus.FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND_OR_OWNER","Can't find Stay with id provided or you are stay owner"),HttpStatus.NOT_FOUND);
             }
             if (!user.getStayLiked().add(stay))
             {
                 user.getStayLiked().remove(stay);
                 userService.save(user);
-                return new ResponseEntity<>(new ErrorResponse("Remove Stay from like list Success"), HttpStatus.OK);
+                Map<String,Object> map = new HashMap<>();
+                map.put("content",user.getStayLiked());
+                return new ResponseEntity<>(map, HttpStatus.OK);
             }
             else
             {
-                return new ResponseEntity<>(new ErrorResponse("Add Stay to like list Success"), HttpStatus.OK);
+                userService.save(user);
+                Map<String,Object> map = new HashMap<>();
+                map.put("content",user.getStayLiked());
+                return new ResponseEntity<>(map, HttpStatus.OK);
             }
         }
         catch (BadCredentialsException e) {
-            return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
         }
     }
     @GetMapping("/LikeList")
@@ -253,10 +273,13 @@ public class StayController {
         UserEntity user;
         try {
             user = authenticateHandler.authenticateUser(req);
-            return new ResponseEntity<>(user.getStayLiked(), HttpStatus.OK);
+            Map<String,Object> map = new HashMap<>();
+            map.put("content",user.getStayLiked());
+            return new ResponseEntity<>(map, HttpStatus.OK);
         }
         catch (BadCredentialsException e) {
-            return new ResponseEntity<>(new ErrorResponse("Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
         }
     }
 
