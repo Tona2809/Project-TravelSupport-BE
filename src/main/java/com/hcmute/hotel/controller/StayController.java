@@ -6,11 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.hcmute.hotel.handler.AuthenticateHandler;
+import com.hcmute.hotel.handler.FileNotImageException;
 import com.hcmute.hotel.mapping.StayMapping;
-import com.hcmute.hotel.model.entity.AmenitiesEntity;
-import com.hcmute.hotel.model.entity.ProvinceEntity;
-import com.hcmute.hotel.model.entity.StayEntity;
-import com.hcmute.hotel.model.entity.UserEntity;
+import com.hcmute.hotel.model.entity.*;
 import com.hcmute.hotel.model.payload.SuccessResponse;
 import com.hcmute.hotel.model.payload.request.Stay.AddNewStayRequest;
 import com.hcmute.hotel.model.payload.request.Stay.UpdateStayRequest;
@@ -22,6 +20,7 @@ import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.aspectj.util.Reflection;
 import org.hibernate.query.criteria.internal.path.MapKeyHelpers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +29,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -180,8 +181,8 @@ public class StayController {
 
         }
     }
-    @PostMapping("/StayAmenities/{id}")
-    @ApiOperation("Add Stay Amenities")
+    @PostMapping("/stayAmenities/{id}")
+    @ApiOperation("Add")
     public ResponseEntity<Object> addStayAmenities(@PathVariable("id") String id,HttpServletRequest req,@RequestParam String amenitiesId)
     {
         UserEntity user;
@@ -215,8 +216,8 @@ public class StayController {
 
         }
     }
-    @GetMapping("/getUser")
-    @ApiOperation("Get User Owned Stay")
+    @GetMapping("/OwnedStay")
+    @ApiOperation("Get")
     public ResponseEntity<Object> getUserStay(HttpServletRequest req)
     {
         UserEntity user;
@@ -233,8 +234,8 @@ public class StayController {
 
         }
     }
-    @PostMapping("LikeList/{id}")
-    @ApiOperation("Add to liked list")
+    @PostMapping("likeList/{id}")
+    @ApiOperation("Create")
     public ResponseEntity<Object> addStayToLikeList(@PathVariable("id") String id,HttpServletRequest req)
     {
         UserEntity user;
@@ -266,8 +267,8 @@ public class StayController {
 
         }
     }
-    @GetMapping("/LikeList")
-    @ApiOperation("Get user liked list")
+    @GetMapping("/likeList")
+    @ApiOperation("Get")
     public ResponseEntity<Object> getUserLikeList(HttpServletRequest req)
     {
         UserEntity user;
@@ -282,6 +283,58 @@ public class StayController {
 
         }
     }
-
-
+    @PostMapping(value = "/image/{id}",consumes = {"multipart/form-data"})
+    @ApiOperation("Create")
+    public ResponseEntity<Object> addStayImg(@PathVariable("id") String id, @RequestPart MultipartFile[] multipartFile,HttpServletRequest req) {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            StayEntity stay = stayService.getStayById(id);
+            if (stay == null) {
+                return new ResponseEntity<>(new ErrorResponse(E404, "STAY_NOT_FOUND", "Can't find Stay with id provided"), HttpStatus.NOT_FOUND);
+            }
+            if (user != stay.getHost()) {
+                return new ResponseEntity<>(new ErrorResponse(E400, "INVALID_STAY_OWNER", "You are not stay owner"), HttpStatus.BAD_REQUEST);
+            }
+            List<StayImageEntity> listImage = stayService.addStayImg(multipartFile, stay);
+            return new ResponseEntity<>(listImage,HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        } catch (FileNotImageException fileNotImageException)
+        {
+            return new ResponseEntity<>(new ErrorResponse("Unsupported Media Type","FILE_NOT_IMAGE",fileNotImageException.getMessage()),HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        }
+        catch (RuntimeException runtimeException)
+        {
+            return new ResponseEntity<>(new ErrorResponse(E400,"FAIL_TO_UPLOAD",runtimeException.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+    }
+    @DeleteMapping("/image/{id}")
+    @ApiOperation("Delete")
+    public ResponseEntity<Object> deleteStayImg(@PathVariable("id") String id,@RequestParam String[] imageId,HttpServletRequest req) {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            StayEntity stay = stayService.getStayById(id);
+            if (stay == null) {
+                return new ResponseEntity<>(new ErrorResponse(E404, "STAY_NOT_FOUND", "Can't find Stay with id provided"), HttpStatus.NOT_FOUND);
+            }
+            if (user != stay.getHost()) {
+                return new ResponseEntity<>(new ErrorResponse(E400, "INVALID_STAY_OWNER", "You are not stay owner"), HttpStatus.BAD_REQUEST);
+            }
+            StayImageEntity stayImage;
+            for (String temp : imageId)
+            {
+                stayImage = stayService.findImgById(temp);
+                if (stayImage!=null && stayImage.getStay()==stay)
+                {
+                    stay.getStayImage().remove(stayImage);
+                    stayService.DeleteImg(temp);
+                }
+            }
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
 }

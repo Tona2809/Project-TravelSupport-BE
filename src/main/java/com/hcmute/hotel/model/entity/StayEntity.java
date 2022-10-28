@@ -76,6 +76,22 @@ public class StayEntity {
     @Column(name = "\"hidden\"")
     private boolean hidden;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "\"stay_amenities\"", joinColumns = @JoinColumn(name = "\"stay_id\""), inverseJoinColumns = @JoinColumn(name = "\"amenities_id\""))
+    private Set<AmenitiesEntity> amenities;
+    @OneToMany(mappedBy = "stay",targetEntity = StayRatingEntity.class,cascade = CascadeType.ALL)
+    private Set<StayRatingEntity> stayRating;
+    @OneToMany(mappedBy = "stay",targetEntity = StayImageEntity.class,cascade = CascadeType.ALL)
+    private Set<StayImageEntity> stayImage;
+
+    public Set<StayImageEntity> getStayImage() {
+        return stayImage;
+    }
+
+    public void setStayImage(Set<StayImageEntity> stayImage) {
+        this.stayImage = stayImage;
+    }
+
     public boolean isHidden() {
         return hidden;
     }
@@ -84,9 +100,7 @@ public class StayEntity {
         this.hidden = hidden;
     }
 
-    @OneToMany(mappedBy = "stay",targetEntity = StayRatingEntity.class,cascade = CascadeType.ALL)
 
-    private Set<StayRatingEntity> stayRating;
 
     public Set<StayRatingEntity> getStayRating() {
         return stayRating;
@@ -112,9 +126,6 @@ public class StayEntity {
         this.userLiked = userLiked;
     }
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "\"stay_amenities\"", joinColumns = @JoinColumn(name = "\"stay_id\""), inverseJoinColumns = @JoinColumn(name = "\"amenities_id\""))
-    private Set<AmenitiesEntity> amenities;
 
     public Set<AmenitiesEntity> getAmenities() {
         return amenities;

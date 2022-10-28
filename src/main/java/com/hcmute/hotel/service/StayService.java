@@ -1,9 +1,11 @@
 package com.hcmute.hotel.service;
 
 import com.hcmute.hotel.model.entity.StayEntity;
+import com.hcmute.hotel.model.entity.StayImageEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,4 +18,7 @@ public interface StayService {
     void deleteStay(String id);
 
     List<StayEntity> getStayByUser(UserEntity user);
+    List<StayImageEntity> addStayImg(MultipartFile[] files, StayEntity stay);
+    StayImageEntity findImgById(String id);
+    void DeleteImg(String id);
 }
