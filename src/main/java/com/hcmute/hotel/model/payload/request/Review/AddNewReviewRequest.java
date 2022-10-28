@@ -14,10 +14,10 @@ import javax.validation.constraints.Size;
 @Setter
 @Getter
 public class AddNewReviewRequest {
-    @NotEmpty(message = "tiêu đề không được để trống")
+    @NotEmpty(message = "Title name can not be empty")
     private String title;
-    @NotEmpty(message = "Nội dung không được để trống")
+    @NotEmpty(message = "Content name can not be empty")
     private String content;
-    @NotEmpty(message="place")
+    @NotEmpty(message="Place can not be empty")
     private String place;
 }

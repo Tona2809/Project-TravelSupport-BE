@@ -12,7 +12,7 @@ import javax.validation.constraints.NotEmpty;
 @Setter
 @Getter
 public class UpdateProvinceRequest {
-    @NotEmpty(message = "Tên tỉnh không được để trống")
+    @NotEmpty(message = "Province name can not be empty")
     private String name;
 
     private boolean isHidden;

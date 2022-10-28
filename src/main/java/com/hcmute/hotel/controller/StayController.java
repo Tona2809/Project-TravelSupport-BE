@@ -9,25 +9,21 @@ import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
 import com.hcmute.hotel.model.payload.request.Stay.AddNewStayRequest;
 import com.hcmute.hotel.model.payload.request.Stay.UpdateStayRequest;
-import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.AmenitiesService;
 import com.hcmute.hotel.service.ProvinceService;
 import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.UserService;
-import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @ComponentScan

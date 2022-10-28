@@ -1,5 +1,6 @@
 package com.hcmute.hotel.model.payload.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,12 +11,12 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 public class DataResponse {
-    public DataResponse(String message, Map<String, String> details, int status) {
-        this.message = message;
-        this.details = details;
-        this.status = status;
+    private Object content;
+
+
+    public DataResponse(Object data) {
+        this.content = data;
     }
-    private int status;
-    private String message;
-    private Map<String, String> details;
+
+
 }

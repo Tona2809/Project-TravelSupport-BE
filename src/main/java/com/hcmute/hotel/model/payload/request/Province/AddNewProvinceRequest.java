@@ -13,7 +13,7 @@ import javax.validation.constraints.NotEmpty;
 @Getter
 public class AddNewProvinceRequest {
 
-    @NotEmpty(message = "Tên tỉnh không được để trống")
+    @NotEmpty(message = "Province name can not be empty")
     private String name;
 
 
