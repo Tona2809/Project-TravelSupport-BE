@@ -1,186 +1,140 @@
 package com.hcmute.hotel.controller;
 
+import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.StayRatingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
-import com.hcmute.hotel.model.payload.request.HotelRating.AddNewHotelRatingRequest;
-import com.hcmute.hotel.model.payload.request.HotelRating.UpdateHotelRatingRequest;
+import com.hcmute.hotel.model.payload.request.StayRating.AddNewStayRatingRequest;
+import com.hcmute.hotel.model.payload.request.StayRating.UpdateStayRatingRequest;
+import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.StayRatingService;
 import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.UserService;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @ComponentScan
 @RestController
-@RequestMapping("/api/hotelrating")
+@RequestMapping("/api/stayrating")
 @RequiredArgsConstructor
 public class StayRatingController {
+    @Autowired
+    AuthenticateHandler authenticateHandler;
     private final UserService userService;
     private final StayRatingService stayRatingService;
     private final StayService stayService;
-    @Autowired
-    JwtUtils jwtUtils;
-    @PostMapping("/add")
-    public ResponseEntity<SuccessResponse> addHotelRating(@RequestBody @Valid AddNewHotelRatingRequest addNewHotelRatingRequest , BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
-        if (errors.hasErrors()) {
-            throw new MethodArgumentNotValidException(null,errors);
+    static String E401="Unauthorized";
+    static String E404="Not Found";
+    static String E400="Bad Request";
+    @PostMapping("")
+    @ApiOperation("Add")
+    public ResponseEntity<Object> addStayRating(@RequestBody @Valid AddNewStayRatingRequest addNewStayRatingRequest,BindingResult result, HttpServletRequest req) throws Exception {
+        if (result.hasErrors()) {
+            throw new MethodArgumentNotValidException(null,result);
         }
-        String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
-        SuccessResponse response = new SuccessResponse();
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String accessToken = authorizationHeader.substring("Bearer ".length());
-            if (jwtUtils.validateExpiredToken(accessToken) == true) {
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.setMessage("access token is expired");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            StayEntity stay = stayService.getStayById(addNewStayRatingRequest.getStayid());
+            if (stay.getHost()==user || stay==null )
+            {
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND_OR_OWNER","Can't find Stay with id provided or you are stay owner"),HttpStatus.NOT_FOUND);
             }
-            UserEntity user = userService.findById(UUID.fromString(jwtUtils.getUserNameFromJwtToken(accessToken)).toString());
-            if (user == null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("User not found");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
-            else {
-                StayEntity stay = stayService.getStayById(addNewHotelRatingRequest.getHotel());
-                if (stay.getHost()==user)
-                {
-                    response.setStatus(HttpStatus.FOUND.value());
-                    response.setMessage("You can't vote for your own stay");
-                    response.setSuccess(false);
-                    return new ResponseEntity<>(response, HttpStatus.FOUND);
-                }
-                StayRatingEntity hotelRating= stayRatingService.saveHotelRating(addNewHotelRatingRequest,user);
-                response.setStatus(HttpStatus.OK.value());
-                response.setMessage("Add HotelRating successfully");
-                response.setSuccess(true);
-                response.getData().put("HotelRating",hotelRating);
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            }
-        } else {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setMessage("access token is missing");
-            response.setSuccess(false);
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            StayRatingEntity hotelRating= stayRatingService.saveStayRating(addNewStayRatingRequest,user);
+            return new ResponseEntity<>(hotelRating, HttpStatus.OK);
+        } catch (BadCredentialsException e){
+            return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
         }
     }
-    @PatchMapping("/update")
-    public ResponseEntity<SuccessResponse> updateHotelRating(@Valid @RequestBody UpdateHotelRatingRequest updateHotelRatingRequest, BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
+    @PatchMapping("")
+    @ApiOperation("Update")
+    public ResponseEntity<Object> updateStayRating(@Valid @RequestBody UpdateStayRatingRequest updateStayRatingRequest, BindingResult errors, HttpServletRequest req) throws Exception {
         if (errors.hasErrors()) {
             throw new MethodArgumentNotValidException(null,errors);
         }
-        String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
-        SuccessResponse response = new SuccessResponse();
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String accessToken = authorizationHeader.substring("Bearer ".length());
-
-            if (jwtUtils.validateExpiredToken(accessToken) == true) {
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.setMessage("access token is expired");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            StayRatingEntity foundStayRating = stayRatingService.getStayRatingById(updateStayRatingRequest.getId());
+            if(foundStayRating==null){
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_RATING_NOT_FOUND","Can't find StayRating with id provided"),HttpStatus.NOT_FOUND);
             }
-            UserEntity user = userService.findById(UUID.fromString(jwtUtils.getUserNameFromJwtToken(accessToken)).toString());
-            if (user == null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("User not found");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
-            StayRatingEntity foundHotelRating = stayRatingService.getHotelRatingById(updateHotelRatingRequest.getId());
-            if(foundHotelRating==null){
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Can't found HotelRating with id:"+updateHotelRatingRequest.getId());
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
-
-           StayRatingEntity hotelRating = stayRatingService.updateHotelRating(updateHotelRatingRequest);
-            response.setStatus(HttpStatus.OK.value());
-            response.setMessage("Update HotelRating successfully");
-            response.setSuccess(true);
-            response.getData().put("HotelRating",hotelRating);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setMessage("access token is missing");
-            response.setSuccess(false);
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+           StayRatingEntity stayRating = stayRatingService.updateStayRating(updateStayRatingRequest);
+            return new ResponseEntity<>(stayRating, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
     @GetMapping("/{id}")
-    public ResponseEntity<SuccessResponse>getHotelRatingById(@PathVariable("id")String id){
-        StayRatingEntity hotelRating= stayRatingService.getHotelRatingById(id);
-        SuccessResponse response = new SuccessResponse();
-        if(hotelRating==null)
+    @ApiOperation("Get by Id")
+    public ResponseEntity<Object>getStayRatingById(@PathVariable("id")String id){
+        StayRatingEntity stayRating= stayRatingService.getStayRatingById(id);
+        if(stayRating==null)
         {
-            response.setStatus(HttpStatus.NOT_FOUND.value());
-            response.setMessage("Can't found HotelRating with id:"+id);
-            response.setSuccess(false);
-            return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ErrorResponse(E404,"STAY_RATING_NOT_FOUND","Can't find StayRating with id provided"),HttpStatus.NOT_FOUND);
         }
-        response.setStatus(HttpStatus.OK.value());
-        response.setMessage("Get HotelRating successfully");
-        response.setSuccess(true);
-        response.getData().put("HotelRatingInfo",hotelRating);
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        return new ResponseEntity<>(stayRating,HttpStatus.OK);
     }
-    @GetMapping("/getall")
-    public ResponseEntity<SuccessResponse> getAllHotelRating() {
-        List<StayRatingEntity> listHotelRating = stayRatingService.getAllHotelRating();
-        SuccessResponse response = new SuccessResponse();
-        if (listHotelRating.size() == 0) {
-            response.setStatus(HttpStatus.NOT_FOUND.value());
-            response.setMessage("List HotelRating is empty");
-            response.setSuccess(false);
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    @GetMapping("")
+    @ApiOperation("Get all")
+    public ResponseEntity<Object> getAllStayRating() {
+        List<StayRatingEntity> listStayRating = stayRatingService.getAllStayRating();
+        Map<String,Object> map = new HashMap<>();
+        map.put("content",listStayRating);
+        return new ResponseEntity<>(map,HttpStatus.OK);
+        //return new ResponseEntity<>(listStayRating.isEmpty() ? "{}" : map,HttpStatus.OK);
+    }
+    @GetMapping("/get_by_stay/{stay_id}")
+    @ApiOperation("Get by Stay")
+    public ResponseEntity<Object> getStayRatingByStayId(@PathVariable("stay_id")String id) {
+        StayEntity foundStay=stayService.getStayById(id);
+        if(foundStay==null){
+            return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);
         }
-        response.setStatus(HttpStatus.OK.value());
-        response.setMessage("Get all HotelRating successfully");
-        response.setSuccess(true);
-        response.getData().put("HotelRatingInfo", listHotelRating);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-
+        List<StayRatingEntity> listStayRating = stayRatingService.getStayRatingByStayId(id);
+        Map<String,Object> map = new HashMap<>();
+        map.put("content",listStayRating);
+        return new ResponseEntity<>(map,HttpStatus.OK);
+        //return new ResponseEntity<>(listStayRating.isEmpty() ? "{}" : map,HttpStatus.OK);
     }
-
-    @DeleteMapping("/delete")
-    public ResponseEntity<SuccessResponse>deleteHotelRating(@RequestBody List<String> listHotelRatingId,HttpServletRequest httpServletRequest){
-        String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
-        SuccessResponse response = new SuccessResponse();
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String accessToken = authorizationHeader.substring("Bearer ".length());
-            if (jwtUtils.validateExpiredToken(accessToken) == true) {
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.setMessage("access token is expired");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    @DeleteMapping("/{id}")
+    @ApiOperation("Delete")
+    public ResponseEntity<Object>deleteHotelRating(@PathVariable("id") String id,HttpServletRequest req){
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            StayRatingEntity stayRating =stayRatingService.getStayRatingById(id);
+            if(stayRating==null)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_RATING_NOT_FOUND","Can't find StayRating with id provided"),HttpStatus.NOT_FOUND);
             }
-            stayRatingService.deleteById(listHotelRatingId);
-            response.setStatus(HttpStatus.OK.value());
-            response.setMessage("Delete HotelRating successfully");
-            response.setSuccess(true);
-            return new ResponseEntity<>(response,HttpStatus.OK);
-        }else {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setMessage("access token is missing");
-            response.setSuccess(false);
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            if(user!=stayRating.getUserRating())
+            {
+                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_STAY_RATING_OWNER","This is not your StayRating"),HttpStatus.BAD_REQUEST);
+            }
+            stayRatingService.deleteById(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
 
