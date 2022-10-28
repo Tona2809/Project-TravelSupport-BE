@@ -10,11 +10,10 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 public class ErrorResponseMap {
-    public ErrorResponseMap(String message, Map<String,String> details, int status) {
+    public ErrorResponseMap(String message) {
         super();
         this.message = message;
-        this.details = details;
-        this.status = status;
+
     }
     private Boolean success;
     private int status;

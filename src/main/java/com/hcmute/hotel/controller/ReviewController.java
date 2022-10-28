@@ -1,10 +1,8 @@
 package com.hcmute.hotel.controller;
 
-import com.hcmute.hotel.handler.MethodArgumentNotValidException;
 import com.hcmute.hotel.model.entity.ReviewEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
-import com.hcmute.hotel.model.payload.request.Authenticate.AddNewUserRequest;
 import com.hcmute.hotel.model.payload.request.Review.AddNewReviewRequest;
 import com.hcmute.hotel.model.payload.request.Review.UpdateReviewRequest;
 import com.hcmute.hotel.security.JWT.JwtUtils;
@@ -17,6 +15,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +38,7 @@ public class ReviewController {
     @ApiOperation("Create")
     public ResponseEntity<Object>addReview(@RequestBody @Valid AddNewReviewRequest addNewReviewRequest , BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
         if (errors.hasErrors()) {
-            throw new MethodArgumentNotValidException(errors);
+            throw new MethodArgumentNotValidException(null, errors);
         }
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
@@ -64,7 +63,7 @@ public class ReviewController {
     @ApiOperation("Update")
     public ResponseEntity<Object> updateReview(@Valid @RequestBody UpdateReviewRequest updateReviewRequest, BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
         if (errors.hasErrors()) {
-            throw new MethodArgumentNotValidException(errors);
+            throw new MethodArgumentNotValidException(null,errors);
         }
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         SuccessResponse response = new SuccessResponse();
