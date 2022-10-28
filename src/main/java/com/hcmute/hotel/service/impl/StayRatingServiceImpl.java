@@ -57,10 +57,8 @@ public class StayRatingServiceImpl implements StayRatingService {
     }
 
     @Override
-    public void deleteById(List<String> ListId) {
-        for (String id : ListId) {
-            stayRatingRepository.deleteById(id);
-        }
+    public void deleteById(String id) {
+        stayRatingRepository.deleteById(id);
     }
 
     @Override
