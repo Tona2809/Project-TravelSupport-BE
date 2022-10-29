@@ -3,14 +3,14 @@ package com.hcmute.hotel.controller;
 import com.hcmute.hotel.mapping.UserMapping;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
-import com.hcmute.hotel.model.payload.request.Authenticate.AddNewUserRequest;
+import com.hcmute.hotel.model.payload.request.Authenticate.AddNewCustomerRequest;
+import com.hcmute.hotel.model.payload.request.Authenticate.AddNewOwnerRequest;
 import com.hcmute.hotel.model.payload.request.Authenticate.PhoneLoginRequest;
 import com.hcmute.hotel.model.payload.request.Authenticate.RefreshTokenRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.ErrorResponseMap;
 import com.hcmute.hotel.security.DTO.AppUserDetail;
 import com.hcmute.hotel.security.JWT.JwtUtils;
-import com.hcmute.hotel.service.EmailService;
 import com.hcmute.hotel.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -44,23 +48,44 @@ import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 public class AuthenticateController {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final UserService userService;
-    private final EmailService emailService;
     @Autowired
     AuthenticationManager authenticationManager;
     @Autowired
     JwtUtils jwtUtils;
     static String E404="Not Found";
     static String E400="Bad Request";
-    @PostMapping("")
-    @ApiOperation("Create Account")
-    public ResponseEntity<Object> registerAccount(@RequestBody @Valid AddNewUserRequest request) {
-        UserEntity user= UserMapping.registerToEntity(request);
+    @PostMapping("create/customer")
+    @ApiOperation("Create Account Customer")
+    public ResponseEntity<Object> registerAccountCustomer(@RequestBody @Valid AddNewCustomerRequest request)  {
+        UserEntity user= UserMapping.registerCustomerToEntity(request);
         if(userService.findByPhone(user.getPhone())!=null){
             return new ResponseEntity<>(new ErrorResponse(E400,"PHONE_NUMBER_EXISTS","Phone number has been used"),HttpStatus.BAD_REQUEST);
         }
 
         try{
             user=userService.register(user,"USER");
+            if (user==null)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E404,"USER_NOT_CREATED","Add user false"),HttpStatus.NOT_FOUND);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(user.getPhone(), HttpStatus.OK);
+    }
+    @PostMapping("create/owner")
+    @ApiOperation("Create Account Owner")
+    public ResponseEntity<Object> registerAccountOwner(@RequestBody @Valid AddNewOwnerRequest request)  {
+        UserEntity user= UserMapping.registerOwnerToEntity(request);
+        if(userService.findByPhone(user.getPhone())!=null){
+            return new ResponseEntity<>(new ErrorResponse(E400,"PHONE_NUMBER_EXISTS","Phone number has been used"),HttpStatus.BAD_REQUEST);
+        }
+        if(userService.findByEmail(user.getEmail())!=null){
+            return new ResponseEntity<>(new ErrorResponse(E400,"EMAIL_NUMBER_EXISTS","Email has been used"),HttpStatus.BAD_REQUEST);
+        }
+        try{
+            user=userService.register(user,"OWNER");
             if (user==null)
             {
                 return new ResponseEntity<>(new ErrorResponse(E404,"USER_NOT_CREATED","Add user false"),HttpStatus.NOT_FOUND);
@@ -172,11 +197,5 @@ public class AuthenticateController {
         return ResponseEntity
                 .badRequest()
                 .body(errorResponseMap);
-    }
-    @PostMapping("/SendMail")
-    private ResponseEntity<Object> SendMail(@RequestParam String sendTo,@RequestParam String subject,@RequestParam String text)
-    {
-        emailService.sendSimpleMessage(sendTo,subject,text);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
