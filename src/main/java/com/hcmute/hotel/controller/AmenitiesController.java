@@ -5,7 +5,9 @@ import com.hcmute.hotel.model.entity.AmenitiesEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
+import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.service.AmenitiesService;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -15,20 +17,25 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ComponentScan
 @RestController
 @RequestMapping("/api/amenities")
 @RequiredArgsConstructor
 public class AmenitiesController {
+    static String E404="Not Found";
+    static String E400="Bad Request";
+    static String E401="Unauthorized";
     private final AmenitiesService amenitiesService;
     @Autowired
     AuthenticateHandler authenticateHandler;
-    @PostMapping("/addAmenities")
-    public ResponseEntity<SuccessResponse> addNewAmenities(@RequestParam String name, HttpServletRequest req)
+    @PostMapping("")
+    @ApiOperation("Create")
+    public ResponseEntity<Object> addNewAmenities(@RequestParam String name, HttpServletRequest req)
     {
-        SuccessResponse response = new SuccessResponse();
         UserEntity user;
         try
         {
@@ -36,85 +43,61 @@ public class AmenitiesController {
             AmenitiesEntity amenities = amenitiesService.getAmenitiesByName(name);
             if (amenities!=null)
             {
-                response.setStatus( HttpStatus.FOUND.value());
-                response.setSuccess(false);
-                response.setMessage("Amenities with name "+ name +" have already exists");
-                return new ResponseEntity<>(response,HttpStatus.FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E400,"AMENITIES_NAME_ALREADY_EXISTS","Amenities with same name have already exists"),HttpStatus.BAD_REQUEST);
             }
             else
             {
                 amenities= new AmenitiesEntity();
                 amenities.setName(name);
                 amenities=amenitiesService.addAmenities(amenities);
-                response.setMessage("Add amenities success");
-                response.setSuccess(true);
-                response.setStatus(HttpStatus.OK.value());
-                response.getData().put("Amenities",amenities);
-                return new ResponseEntity<>(response,HttpStatus.OK);
+                return new ResponseEntity<>(amenities,HttpStatus.OK);
             }
         }
         catch (BadCredentialsException e) {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setMessage("Unauthorized, please login again");
-        response.setSuccess(false);
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
     }
     }
-    @GetMapping("/getAllAmenities")
-    public ResponseEntity<SuccessResponse> getAllAmenities()
+    @GetMapping("")
+    @ApiOperation("Get All")
+    public ResponseEntity<Object> getAllAmenities()
     {
         List<AmenitiesEntity> listAmenities = amenitiesService.getAllAmenities();
-        SuccessResponse response = new SuccessResponse();
-        response.setStatus(HttpStatus.OK.value());
-        response.setSuccess(true);
-        response.getData().put("listAmenities",listAmenities);
-        response.setMessage(listAmenities.isEmpty() ? "List stay is empty" : "Get list stay success");
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        System.out.println(E404);
+        Map<String,Object> map = new HashMap<>();
+        map.put("content",listAmenities);
+        return new ResponseEntity<>( map,HttpStatus.OK);
     }
-    @PatchMapping("/updateAmenities/{id}")
-    public ResponseEntity<SuccessResponse> updateAmenities(@PathVariable("id") String id,@RequestParam String name)
+    @PatchMapping("/{id}")
+    @ApiOperation("Update")
+    public ResponseEntity<Object> updateAmenities(@PathVariable("id") String id,@RequestParam String name)
     {
         AmenitiesEntity amenities= amenitiesService.getAmenitiesById(id);
-        SuccessResponse response = new SuccessResponse();
         if (amenities==null || amenitiesService.getAmenitiesByName(name)!=null)
         {
-            response.setStatus( HttpStatus.FOUND.value());
-            response.setSuccess(false);
-            response.setMessage("Amenities not found or Amenities with name " + name + " have already exists");
-            return new ResponseEntity<>(response,HttpStatus.FOUND);
+            return new ResponseEntity<>(new ErrorResponse(E400,"AMENITIES_NOT_FOUND_OR_EXISTS","Amenities not found or Amenities with same name have already exists"),HttpStatus.BAD_REQUEST);
         }
         else
         {
             amenities.setName(name);
             amenities=amenitiesService.addAmenities(amenities);
-            response.setMessage("Update amenities success");
-            response.setSuccess(true);
-            response.setStatus(HttpStatus.OK.value());
-            response.getData().put("Amenities",amenities);
-            return new ResponseEntity<>(response,HttpStatus.OK);
+            return new ResponseEntity<>(amenities,HttpStatus.OK);
         }
     }
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<SuccessResponse> deleteAmenities(@PathVariable("id") String id)
+    @DeleteMapping("/{id}")
+    @ApiOperation("Delete")
+    public ResponseEntity<Object> deleteAmenities(@PathVariable("id") String id)
     {
         AmenitiesEntity amenities= amenitiesService.getAmenitiesById(id);
-        SuccessResponse response = new SuccessResponse();
         if (amenities==null )
         {
-            response.setStatus( HttpStatus.FOUND.value());
-            response.setSuccess(false);
-            response.setMessage("Amenities not found");
-            return new ResponseEntity<>(response,HttpStatus.FOUND);
+            return new ResponseEntity<>(new ErrorResponse(E404,"AMENITIES_NOT_FOUND","Amenities not found"),HttpStatus.NOT_FOUND);
         }
         for (StayEntity stay : amenities.getStays())
         {
             stay.getAmenities().remove(amenities);
         }
         amenitiesService.deleteAmenities(id);
-        response.setMessage("Delete amenities success");
-        response.setSuccess(true);
-        response.setStatus(HttpStatus.OK.value());
-        return new ResponseEntity<>(response,HttpStatus.OK);
 
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
