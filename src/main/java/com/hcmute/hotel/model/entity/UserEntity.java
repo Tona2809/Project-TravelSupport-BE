@@ -79,6 +79,15 @@ public class UserEntity {
         this.password = password;
         this.phone = phone;
     }
+
+    public UserEntity(String fullName, String email, String password, String gender, String phone) {
+        this.fullName = fullName;
+        this.email = email;
+        this.password = password;
+        this.gender = gender;
+        this.phone = phone;
+    }
+
     @OneToMany(mappedBy = "host",targetEntity = StayEntity.class,cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<StayEntity> stayOwner;

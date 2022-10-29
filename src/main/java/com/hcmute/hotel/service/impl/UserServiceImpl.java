@@ -47,6 +47,13 @@ private final UserRepository userRepository;
             return null;
         return user.get();
     }
+    @Override
+    public UserEntity findByEmail(String email) {
+        Optional<UserEntity> user = userRepository.findByEmail(email);
+        if (user.isEmpty())
+            return null;
+        return user.get();
+    }
 
     @Override
     public UserEntity findById(String uuid) {

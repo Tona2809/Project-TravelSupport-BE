@@ -15,5 +15,6 @@ UserEntity register(UserEntity user,String role);
 UserEntity findByPhone(String phone);
 
     UserEntity findById(String uuid);
+    public UserEntity findByEmail(String email);
     UserEntity save(UserEntity user);
 }
