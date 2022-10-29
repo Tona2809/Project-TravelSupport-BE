@@ -44,6 +44,7 @@ public class UserEntity {
     private boolean active;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnore
     @JoinTable(name = "\"user_like_stay\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"stay_id\""))
     private Set<StayEntity> stayLiked;
 

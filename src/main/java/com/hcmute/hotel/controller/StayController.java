@@ -28,8 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +47,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/stay")
 @RequiredArgsConstructor
+@EnableWebSecurity
 public class StayController {
     @Autowired
     AuthenticateHandler authenticateHandler;
@@ -337,6 +340,7 @@ public class StayController {
     }
     @GetMapping("/paging/{provinceId}")
     @ApiOperation("Search by Province")
+    @Secured("ADMIN")
     public ResponseEntity<Object> pagingProvince(@PathVariable("provinceId") String id,
                                                  @RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "5") int size)
