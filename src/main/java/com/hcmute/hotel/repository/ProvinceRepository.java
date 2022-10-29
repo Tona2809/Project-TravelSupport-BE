@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import java.util.List;
 
 @EnableJpaRepositories
-public interface ProvinceRepository extends JpaRepository<ProvinceEntity, Integer> {
+public interface ProvinceRepository extends JpaRepository<ProvinceEntity, String> {
     List<ProvinceEntity> findByName(String name);
     @Query(value = "select * from province where name like %?%  and id <> ?", nativeQuery = true)
-    List<ProvinceEntity> findByNameAndId(String name, int id);
+    List<ProvinceEntity> findByNameAndId(String name, String id);
 }

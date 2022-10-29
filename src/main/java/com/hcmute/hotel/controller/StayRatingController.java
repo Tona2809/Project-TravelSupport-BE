@@ -103,9 +103,9 @@ public class StayRatingController {
         return new ResponseEntity<>(map,HttpStatus.OK);
         //return new ResponseEntity<>(listStayRating.isEmpty() ? "{}" : map,HttpStatus.OK);
     }
-    @GetMapping("/get_by_stay/{stay_id}")
+    @GetMapping("/getByStay/{stayId}")
     @ApiOperation("Get by Stay")
-    public ResponseEntity<Object> getStayRatingByStayId(@PathVariable("stay_id")String id) {
+    public ResponseEntity<Object> getStayRatingByStayId(@PathVariable("stayId")String id) {
         StayEntity foundStay=stayService.getStayById(id);
         if(foundStay==null){
             return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);

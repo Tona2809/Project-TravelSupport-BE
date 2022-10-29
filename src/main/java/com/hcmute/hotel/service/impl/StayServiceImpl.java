@@ -1,6 +1,7 @@
 package com.hcmute.hotel.service.impl;
 
 import com.hcmute.hotel.handler.FileNotImageException;
+import com.hcmute.hotel.model.entity.ProvinceEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.StayImageEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
@@ -9,6 +10,9 @@ import com.hcmute.hotel.repository.StayRepository;
 import com.hcmute.hotel.service.ImageStorageService;
 import com.hcmute.hotel.service.StayService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -89,6 +93,19 @@ public class StayServiceImpl implements StayService {
     @Override
     public void DeleteImg(String id) {
         stayImageRepository.deleteById(id);
+    }
+
+    @Override
+    public List<StayEntity> pagingByProvince(String provinceId, int pageNo, int pageSize) {
+        Pageable paging=null;
+        paging= PageRequest.of(pageNo,pageSize);
+        Page<StayEntity> pageResult = stayRepository.findALlStayByProvinceId(provinceId,paging);
+        return pageResult.toList();
+    }
+
+    @Override
+    public List<StayEntity> findAllStayByProvince(ProvinceEntity province) {
+        return stayRepository.findAllByProvince(province);
     }
 
     public boolean isImageFile(MultipartFile file) {

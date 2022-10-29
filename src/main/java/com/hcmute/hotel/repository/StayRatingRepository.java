@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface StayRatingRepository extends JpaRepository<StayRatingEntity,String> {
     @Modifying
-    @Query(value =  "Delete from hotel_rating where id = ?", nativeQuery = true)
+    @Query(value =  "Delete from stay_rating where id = ?", nativeQuery = true)
     void deleteById(String id);
     List<StayRatingEntity> findByStay(StayEntity stay);
 }

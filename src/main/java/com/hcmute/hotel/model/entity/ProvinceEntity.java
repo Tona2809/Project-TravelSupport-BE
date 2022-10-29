@@ -3,6 +3,7 @@ package com.hcmute.hotel.model.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -14,9 +15,15 @@ import java.util.Set;
 public class ProvinceEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "\"id\"")
-    private int id;
+    @GeneratedValue(
+            generator = "UUID"
+    )
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    private String id;
 
     @Column(name = "\"name\"")
     private String name;
@@ -37,6 +44,16 @@ public class ProvinceEntity {
     @OneToMany(mappedBy = "province",targetEntity = StayEntity.class)
     @JsonIgnore
     private Set<StayEntity> stay;
+    @Column(name = "\"image_link\"")
+    private String imgLink;
+
+    public String getImgLink() {
+        return imgLink;
+    }
+
+    public void setImgLink(String imgLink) {
+        this.imgLink = imgLink;
+    }
 
     public Set<StayEntity> getStay() {
         return stay;
@@ -46,11 +63,11 @@ public class ProvinceEntity {
         this.stay = stay;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -94,13 +111,15 @@ public class ProvinceEntity {
         this.updateAt = updateAt;
     }
 
-    public ProvinceEntity(int id, String name, int placeCount, boolean isHidden, LocalDateTime createAt, LocalDateTime updateAt) {
+    public ProvinceEntity(String id, String name, int placeCount, boolean isHidden, LocalDateTime createAt, LocalDateTime updateAt, Set<StayEntity> stay, String imgLink) {
         this.id = id;
         this.name = name;
         this.placeCount = placeCount;
         this.isHidden = isHidden;
         this.createAt = createAt;
         this.updateAt = updateAt;
+        this.stay = stay;
+        this.imgLink = imgLink;
     }
 
     public ProvinceEntity() {

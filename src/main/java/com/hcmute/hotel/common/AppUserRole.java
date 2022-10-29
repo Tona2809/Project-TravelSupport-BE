@@ -11,7 +11,8 @@ import static com.hcmute.hotel.common.UserPermission.*;
 
 public enum AppUserRole {
     USER(Sets.newHashSet(USER_READ, USER_WRITE)),
-    ADMIN(Sets.newHashSet(ADMIN_READ, ADMIN_WRITE, USER_READ, USER_WRITE));
+    ADMIN(Sets.newHashSet(ADMIN_READ, ADMIN_WRITE, USER_READ, USER_WRITE)),
+    OWNER(Sets.newHashSet(OWNER_READ, OWNER_WRITE));
 
     private final Set<UserPermission> permissions;
 

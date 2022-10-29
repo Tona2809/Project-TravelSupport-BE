@@ -10,6 +10,7 @@ import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.ErrorResponseMap;
 import com.hcmute.hotel.security.DTO.AppUserDetail;
 import com.hcmute.hotel.security.JWT.JwtUtils;
+import com.hcmute.hotel.service.EmailService;
 import com.hcmute.hotel.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +44,7 @@ import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 public class AuthenticateController {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final UserService userService;
+    private final EmailService emailService;
     @Autowired
     AuthenticationManager authenticationManager;
     @Autowired
@@ -173,5 +172,11 @@ public class AuthenticateController {
         return ResponseEntity
                 .badRequest()
                 .body(errorResponseMap);
+    }
+    @PostMapping("/SendMail")
+    private ResponseEntity<Object> SendMail(@RequestParam String sendTo,@RequestParam String subject,@RequestParam String text)
+    {
+        emailService.sendSimpleMessage(sendTo,subject,text);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

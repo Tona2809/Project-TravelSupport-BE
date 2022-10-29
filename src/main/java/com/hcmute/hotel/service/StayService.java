@@ -1,5 +1,6 @@
 package com.hcmute.hotel.service;
 
+import com.hcmute.hotel.model.entity.ProvinceEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.StayImageEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
@@ -21,4 +22,6 @@ public interface StayService {
     List<StayImageEntity> addStayImg(MultipartFile[] files, StayEntity stay);
     StayImageEntity findImgById(String id);
     void DeleteImg(String id);
+    List<StayEntity> pagingByProvince(String provinceId,int pageNo,int pageSize);
+    List<StayEntity> findAllStayByProvince(ProvinceEntity province);
 }

@@ -1,12 +1,14 @@
 package com.hcmute.hotel.controller;
 
 import com.hcmute.hotel.constants.ApplicationConstants;
+import com.hcmute.hotel.handler.FileNotImageException;
 import com.hcmute.hotel.mapping.ProvinceMapping;
 import com.hcmute.hotel.model.entity.ProvinceEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.payload.request.Province.AddNewProvinceRequest;
 import com.hcmute.hotel.model.payload.request.Province.UpdateProvinceRequest;
 import com.hcmute.hotel.model.payload.response.DataResponse;
+import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.MessageResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.ProvinceService;
@@ -21,6 +23,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -50,7 +53,7 @@ public class ProvinceController {
 
     @GetMapping("/{id}")
     @ApiOperation("Find by id")
-    public ResponseEntity<Object> getProvinceById(@PathVariable int id) {
+    public ResponseEntity<Object> getProvinceById(@PathVariable String id) {
         ProvinceEntity provinceEntity = provinceService.getProvinceById(id);
         if (provinceEntity == null) {
             MessageResponse messageResponse = new MessageResponse("Bad Request", "PROVINCE_ID_NOT_FOUND", "Province id not found");
@@ -93,7 +96,7 @@ public class ProvinceController {
 
     @PatchMapping("/{id}")
     @ApiOperation("Update")
-    public ResponseEntity<Object> updateProvince(@Valid @RequestBody UpdateProvinceRequest updateProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest, @PathVariable("id") int id) throws Exception {
+    public ResponseEntity<Object> updateProvince(@Valid @RequestBody UpdateProvinceRequest updateProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest, @PathVariable("id") String id) throws Exception {
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null, result);
         }
@@ -125,7 +128,7 @@ public class ProvinceController {
 
     @DeleteMapping("/{id}")
     @ApiOperation("Delete")
-    public ResponseEntity<Object> deleteProvinceById(@PathVariable("id") int id, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Object> deleteProvinceById(@PathVariable("id") String id, HttpServletRequest httpServletRequest) {
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         ProvinceEntity province = provinceService.getProvinceById(id);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
@@ -146,5 +149,47 @@ public class ProvinceController {
                 return new ResponseEntity<>(HttpStatus.OK);
             }
         } else throw new BadCredentialsException("access token is missing");
+    }
+    @PostMapping(value = "/image/{id}",consumes = {"multipart/form-data"})
+    @ApiOperation("Add")
+    public ResponseEntity<Object> addProviceImage(@PathVariable String id, @RequestPart MultipartFile file)
+    {
+        ProvinceEntity province =  provinceService.getProvinceById(id);
+        if (province==null)
+        {
+            MessageResponse messageResponse = new MessageResponse("Bad request", "PROVINCE_ID_NOT_FOUND", "Province id not found");
+            return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);
+        }
+        if (province.getImgLink()!=null)
+        {
+            MessageResponse messageResponse = new MessageResponse("Not found", "PROVINCE_ALREADY_HAVE_IMAGE", "Province already have image");
+            return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
+        }
+        try
+        {
+            province=provinceService.addImage(file,province);
+            return new ResponseEntity<>(province,HttpStatus.OK);
+        } catch (FileNotImageException fileNotImageException)
+        {
+            return new ResponseEntity<>(new ErrorResponse("Unsupported Media Type","FILE_NOT_IMAGE",fileNotImageException.getMessage()),HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        }
+        catch (RuntimeException runtimeException)
+        {
+            return new ResponseEntity<>(new ErrorResponse("Bad request","FAIL_TO_UPLOAD",runtimeException.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+    }
+    @DeleteMapping("/image/{provinceid}")
+    @ApiOperation("Delete")
+    public ResponseEntity<Object> deleteImage(@PathVariable("provinceId") String id)
+    {
+        ProvinceEntity province =  provinceService.getProvinceById(id);
+        if (province==null)
+        {
+            MessageResponse messageResponse = new MessageResponse("Bad request", "PROVINCE_ID_NOT_FOUND", "Province id not found");
+            return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);
+        }
+        province.setImgLink(null);
+        provinceService.saveProvince(province);
+        return new ResponseEntity<>(province,HttpStatus.OK);
     }
 }

@@ -17,7 +17,7 @@ public class AddNewStayRequest {
     @NotEmpty(message = "name"+EMPTY_MESSAGE)
     String name;
     @NotNull(message = "province id"+EMPTY_MESSAGE)
-    int provinceId;
+    String provinceId;
     @NotEmpty(message = "address description" + EMPTY_MESSAGE)
     String addressDescription;
     @NotEmpty(message = "stay description"+ EMPTY_MESSAGE)

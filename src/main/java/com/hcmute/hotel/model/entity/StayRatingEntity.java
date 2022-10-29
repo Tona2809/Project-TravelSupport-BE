@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @RestResource(exported = false)
 @Entity
-@Table(name = "\"hotel_rating\"")
+@Table(name = "\"stay_rating\"")
 @NoArgsConstructor
 public class StayRatingEntity {
     @Id
@@ -29,7 +29,6 @@ public class StayRatingEntity {
     private int rate;
     @ManyToOne()
     @JoinColumn(name = "\"user\"")
-    @JsonIgnore
     private UserEntity userRating;
     @Column(name = "\"message\"")
     private String message;
