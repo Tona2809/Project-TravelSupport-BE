@@ -55,7 +55,9 @@ public class UserEntity {
         this.stayLiked = stayLiked;
     }
 
+
     @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnore
     @JoinTable(name = "\"user_role\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"role_id\""))
     private Set<RoleEntity> roles;
 
@@ -167,6 +169,13 @@ public class UserEntity {
         this.roles = roles;
     }
 
+    public Set<ReviewEntity> getListReview() {
+        return listReview;
+    }
+
+    public void setListReview(Set<ReviewEntity> listReview) {
+        this.listReview = listReview;
+    }
 
     public UserEntity() {
     }

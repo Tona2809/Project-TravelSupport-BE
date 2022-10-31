@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class AppUserDetailService implements UserDetailsService {
@@ -28,7 +27,6 @@ public class AppUserDetailService implements UserDetailsService {
         {
             throw new UsernameNotFoundException("User not found");
         }
-        LOGGER.info(userEntity.get().getEmail());
         return AppUserDetail.build(userEntity.get());
     }
 }

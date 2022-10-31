@@ -1,10 +1,6 @@
 package com.hcmute.hotel.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
 import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.handler.FileNotImageException;
 import com.hcmute.hotel.mapping.StayMapping;
@@ -14,30 +10,23 @@ import com.hcmute.hotel.model.payload.request.Stay.AddNewStayRequest;
 import com.hcmute.hotel.model.payload.request.Stay.UpdateStayRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.PagingResponse;
-import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.AmenitiesService;
 import com.hcmute.hotel.service.ProvinceService;
 import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
-import org.aspectj.util.Reflection;
-import org.hibernate.query.criteria.internal.path.MapKeyHelpers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -58,6 +47,7 @@ public class StayController {
     static String E400="Bad Request";
     @PostMapping("")
     @ApiOperation("Add")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> addStay(HttpServletRequest req, @Valid @RequestBody AddNewStayRequest addNewStayRequest)
     {
         UserEntity user;
@@ -124,6 +114,7 @@ public class StayController {
     }
     @PatchMapping("/{id}")
     @ApiOperation("Update")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> updateStayInfo(@PathVariable("id") String id,@Valid @RequestBody UpdateStayRequest updateStayRequest,HttpServletRequest req)
     {
         UserEntity user;
@@ -153,6 +144,7 @@ public class StayController {
     }
     @DeleteMapping("/{id}")
     @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> deleteStay(@PathVariable("id") String id,HttpServletRequest req) {
         UserEntity user;
         try {
@@ -181,6 +173,7 @@ public class StayController {
     }
     @PostMapping("/stayAmenities/{id}")
     @ApiOperation("Add")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> addStayAmenities(@PathVariable("id") String id,HttpServletRequest req,@RequestParam String amenitiesId)
     {
         UserEntity user;
@@ -216,6 +209,7 @@ public class StayController {
     }
     @GetMapping("/OwnedStay")
     @ApiOperation("Get")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> getUserStay(HttpServletRequest req)
     {
         UserEntity user;
@@ -234,6 +228,7 @@ public class StayController {
     }
     @PostMapping("likeList/{id}")
     @ApiOperation("Create")
+
     public ResponseEntity<Object> addStayToLikeList(@PathVariable("id") String id,HttpServletRequest req)
     {
         UserEntity user;
@@ -283,6 +278,7 @@ public class StayController {
     }
     @PostMapping(value = "/image/{id}",consumes = {"multipart/form-data"})
     @ApiOperation("Create")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> addStayImg(@PathVariable("id") String id, @RequestPart MultipartFile[] multipartFile,HttpServletRequest req) {
         UserEntity user;
         try {
@@ -309,6 +305,7 @@ public class StayController {
     }
     @DeleteMapping("/image/{id}")
     @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> deleteStayImg(@PathVariable("id") String id,@RequestParam String[] imageId,HttpServletRequest req) {
         UserEntity user;
         try {
