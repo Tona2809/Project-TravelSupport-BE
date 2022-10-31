@@ -4,7 +4,9 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
@@ -18,6 +20,6 @@ public class AddNewCustomerRequest {
     @Size(min = 8, message = "Password phải từ 8 kí tự trở lên")
     private String password;
     @NotEmpty(message = "Thiếu số điện thoại")
-    @Size(min = 9, message = "sdt tối thiểu 9 kí tự")
-    private String phone;
+    @Email(message = "This must be email field")
+    private String email;
 }

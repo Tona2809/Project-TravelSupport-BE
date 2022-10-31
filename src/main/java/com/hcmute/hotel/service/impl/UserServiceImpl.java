@@ -67,4 +67,12 @@ private final UserRepository userRepository;
     public UserEntity save(UserEntity user) {
         return userRepository.save(user);
     }
+
+    @Override
+    public UserEntity findByVerificationCode(String code) {
+        Optional<UserEntity> user = userRepository.findByVerificationCode(code);
+        if(user.isEmpty())
+            return null;
+        return user.get();
+    }
 }

@@ -364,4 +364,5 @@ public class StayController {
         pagingResponse.setContent(Result);
         return new ResponseEntity<>(pagingResponse ,HttpStatus.OK);
     }
+
 }

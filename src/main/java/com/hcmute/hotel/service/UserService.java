@@ -17,4 +17,6 @@ UserEntity findByPhone(String phone);
     UserEntity findById(String uuid);
     public UserEntity findByEmail(String email);
     UserEntity save(UserEntity user);
+
+    UserEntity findByVerificationCode(String code);
 }

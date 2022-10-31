@@ -22,9 +22,6 @@ public class AddNewOwnerRequest {
     private String phone;
     @NotEmpty(message = "Tên không được để trống")
     private  String fullname;
-    @NotEmpty(message = "email không được để trống")
-    @Email(message = "Email không đúng")
-    private String email;
     @NotEmpty(message = "giới tính không được để trống")
     private String gender;
 

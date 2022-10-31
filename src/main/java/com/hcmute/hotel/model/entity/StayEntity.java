@@ -84,6 +84,18 @@ public class StayEntity {
     @OneToMany(mappedBy = "stay",targetEntity = StayImageEntity.class,cascade = CascadeType.ALL)
     private Set<StayImageEntity> stayImage;
 
+    @OneToMany(mappedBy = "stay",targetEntity = BookingEntity.class,cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<BookingEntity> booking;
+
+    public Set<BookingEntity> getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Set<BookingEntity> booking) {
+        this.booking = booking;
+    }
+
     public Set<StayImageEntity> getStayImage() {
         return stayImage;
     }

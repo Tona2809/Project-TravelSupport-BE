@@ -67,6 +67,17 @@ public class UserEntity {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userRating")
     @JsonIgnore
     private  Set<StayRatingEntity> listRating;
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER, mappedBy = "user",targetEntity = BookingEntity.class)
+    @JsonIgnore
+    private Set<BookingEntity> bookingEntities;
+
+    public Set<BookingEntity> getBookingEntities() {
+        return bookingEntities;
+    }
+
+    public void setBookingEntities(Set<BookingEntity> bookingEntities) {
+        this.bookingEntities = bookingEntities;
+    }
 
     public Set<StayRatingEntity> getListRating() {
         return listRating;
@@ -76,9 +87,9 @@ public class UserEntity {
         this.listRating = listRating;
     }
 
-    public UserEntity(String password, String phone) {
+    public UserEntity(String password, String email) {
         this.password = password;
-        this.phone = phone;
+        this.email=email;
     }
 
     public UserEntity(String fullName, String email, String password, String gender, String phone) {
@@ -93,8 +104,26 @@ public class UserEntity {
     @JsonIgnore
     private Set<StayEntity> stayOwner;
 
+    @Column(name = "\"verification_code\"")
+    private String verificationCode;
+    @Column(name = "\"enabled\"")
+    private boolean enabled;
 
+    public String getVerificationCode() {
+        return verificationCode;
+    }
 
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public Set<StayEntity> getStayOwner() {
         return stayOwner;

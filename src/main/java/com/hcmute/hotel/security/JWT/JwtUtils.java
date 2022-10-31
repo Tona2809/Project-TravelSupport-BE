@@ -3,6 +3,7 @@ package com.hcmute.hotel.security.JWT;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.security.DTO.AppUserDetail;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
@@ -12,9 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -46,6 +45,16 @@ public class JwtUtils {
         return access_token;
 
     }
+    public String generateOwnerRegisterToken(UserEntity user)
+    {
+        Algorithm algorithm = Algorithm.HMAC256(jwtSecret.getBytes());
+        String customer_token = JWT.create()
+                .withSubject(user.getEmail())
+                .withExpiresAt(new Date(System.currentTimeMillis()+300000))
+                .withClaim("verificationCode",user.getVerificationCode())
+                .sign(algorithm);
+        return customer_token;
+    }
     public Collection<SimpleGrantedAuthority> getAuthoritiesFromJwtToken(String token) {
         String tempRolesString = Jwts.parser().setSigningKey(jwtSecret.getBytes()).parseClaimsJws(token).getBody().get("rolePermissions").toString();
         String[] roles =tempRolesString.substring(1,tempRolesString.length()-1).replaceAll(" ","").split(",");
@@ -56,6 +65,11 @@ public class JwtUtils {
         }
         return authorities;
     }
+//    public String getVerificationCode(String token)
+//    {
+//        String verificationCode = Jwts.parser().setSigningKey(jwtSecret.getBytes()).parseClaimsJws(token).getBody().get("verificationCode").toString();
+//        return verificationCode;
+//    }
 
 
     public boolean validateJwtToken(String authToken) throws ExpiredJwtException {

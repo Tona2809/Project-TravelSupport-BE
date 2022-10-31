@@ -10,11 +10,15 @@ public class UserMapping {
     public static UserEntity registerCustomerToEntity(AddNewCustomerRequest registerRequest) {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         registerRequest.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        return new UserEntity( registerRequest.getPassword(),registerRequest.getPhone());
+        return new UserEntity( registerRequest.getPassword(),registerRequest.getEmail());
     }
-    public static UserEntity registerOwnerToEntity(AddNewOwnerRequest registerRequest) {
+    public static UserEntity registerOwnerToEntity(UserEntity user,AddNewOwnerRequest registerRequest) {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        user.setFullName(registerRequest.getFullname());
+        user.setPhone(registerRequest.getPhone());
+        user.setGender(registerRequest.getGender());
         registerRequest.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        return new UserEntity( registerRequest.getFullname(),registerRequest.getEmail(),registerRequest.getPassword(),registerRequest.getGender(),registerRequest.getPhone());
+        user.setPassword(registerRequest.getPassword());
+        return user;
     }
 }
