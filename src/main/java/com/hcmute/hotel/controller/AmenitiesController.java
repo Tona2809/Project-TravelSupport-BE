@@ -4,7 +4,6 @@ import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.model.entity.AmenitiesEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
-import com.hcmute.hotel.model.payload.SuccessResponse;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.service.AmenitiesService;
 import io.swagger.annotations.ApiOperation;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +34,7 @@ public class AmenitiesController {
     AuthenticateHandler authenticateHandler;
     @PostMapping("")
     @ApiOperation("Create")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> addNewAmenities(@RequestParam String name, HttpServletRequest req)
     {
         UserEntity user;
@@ -59,6 +60,7 @@ public class AmenitiesController {
     }
     @GetMapping("")
     @ApiOperation("Get All")
+
     public ResponseEntity<Object> getAllAmenities()
     {
         List<AmenitiesEntity> listAmenities = amenitiesService.getAllAmenities();
@@ -69,6 +71,7 @@ public class AmenitiesController {
     }
     @PatchMapping("/{id}")
     @ApiOperation("Update")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> updateAmenities(@PathVariable("id") String id,@RequestParam String name)
     {
         AmenitiesEntity amenities= amenitiesService.getAmenitiesById(id);
@@ -85,6 +88,7 @@ public class AmenitiesController {
     }
     @DeleteMapping("/{id}")
     @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> deleteAmenities(@PathVariable("id") String id)
     {
         AmenitiesEntity amenities= amenitiesService.getAmenitiesById(id);

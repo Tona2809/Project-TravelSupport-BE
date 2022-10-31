@@ -13,21 +13,19 @@ import com.hcmute.hotel.model.payload.response.MessageResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.ProvinceService;
 import io.swagger.annotations.ApiOperation;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.websocket.OnClose;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +44,7 @@ public class ProvinceController {
 
     @GetMapping("")
     @ApiOperation("Find all")
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     public DataResponse getAllProvinces() {
         List<ProvinceEntity> provinceEntityList = provinceService.getAllProvinces();
         return new DataResponse(provinceEntityList);
@@ -53,6 +52,7 @@ public class ProvinceController {
 
     @GetMapping("/{id}")
     @ApiOperation("Find by id")
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> getProvinceById(@PathVariable String id) {
         ProvinceEntity provinceEntity = provinceService.getProvinceById(id);
         if (provinceEntity == null) {
@@ -66,6 +66,7 @@ public class ProvinceController {
 
     @PostMapping("")
     @ApiOperation("Create")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> addProvince(@RequestBody @Valid AddNewProvinceRequest addNewProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest) throws Exception {
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null, result);
@@ -96,6 +97,7 @@ public class ProvinceController {
 
     @PatchMapping("/{id}")
     @ApiOperation("Update")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> updateProvince(@Valid @RequestBody UpdateProvinceRequest updateProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest, @PathVariable("id") String id) throws Exception {
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null, result);
@@ -128,6 +130,7 @@ public class ProvinceController {
 
     @DeleteMapping("/{id}")
     @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> deleteProvinceById(@PathVariable("id") String id, HttpServletRequest httpServletRequest) {
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         ProvinceEntity province = provinceService.getProvinceById(id);
@@ -152,6 +155,7 @@ public class ProvinceController {
     }
     @PostMapping(value = "/image/{id}",consumes = {"multipart/form-data"})
     @ApiOperation("Add")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> addProviceImage(@PathVariable String id, @RequestPart MultipartFile file)
     {
         ProvinceEntity province =  provinceService.getProvinceById(id);
@@ -180,6 +184,7 @@ public class ProvinceController {
     }
     @DeleteMapping("/image/{provinceid}")
     @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> deleteImage(@PathVariable("provinceId") String id)
     {
         ProvinceEntity province =  provinceService.getProvinceById(id);

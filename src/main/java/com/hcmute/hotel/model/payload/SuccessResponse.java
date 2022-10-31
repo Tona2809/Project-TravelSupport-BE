@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class SuccessResponse {
+public class SuccessResponse<O> {
     private Boolean success;
     private int status;
     private String message;
