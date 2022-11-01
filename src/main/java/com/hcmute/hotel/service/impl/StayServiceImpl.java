@@ -13,10 +13,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -106,6 +108,15 @@ public class StayServiceImpl implements StayService {
     @Override
     public List<StayEntity> findAllStayByProvince(ProvinceEntity province) {
         return stayRepository.findAllByProvince(province);
+    }
+
+    @Override
+    public Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate, int maxPeople, int pageNo, int pageSize, String sort, String orderBy) {
+        Pageable paging=null;
+        paging= PageRequest.of(pageNo,pageSize,orderBy=="asc" ? Sort.by(sort).ascending() : Sort.by(sort).descending());
+        Page<StayEntity> pageResult=stayRepository.searchByCriteria(provinceId, minPrice,maxPrice, checkinDate, checkoutDate, maxPeople, sort, orderBy,paging);
+        pageResult.getTotalElements();
+        return pageResult;
     }
 
     public boolean isImageFile(MultipartFile file) {

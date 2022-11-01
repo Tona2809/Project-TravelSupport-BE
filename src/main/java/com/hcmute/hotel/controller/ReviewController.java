@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,7 @@ public class ReviewController {
     JwtUtils jwtUtils;
     @PostMapping("/add")
     @ApiOperation("Create")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Object>addReview(@RequestBody @Valid AddNewReviewRequest addNewReviewRequest , BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
         if (errors.hasErrors()) {
             throw new MethodArgumentNotValidException(null, errors);
@@ -61,6 +63,7 @@ public class ReviewController {
     }
     @PatchMapping("/update")
     @ApiOperation("Update")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Object> updateReview(@Valid @RequestBody UpdateReviewRequest updateReviewRequest, BindingResult errors, HttpServletRequest httpServletRequest) throws Exception {
         if (errors.hasErrors()) {
             throw new MethodArgumentNotValidException(null,errors);
@@ -140,6 +143,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/delete")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<SuccessResponse>deleteReview(@RequestBody List<String> listReviewId,HttpServletRequest httpServletRequest){
         String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
         SuccessResponse response = new SuccessResponse();

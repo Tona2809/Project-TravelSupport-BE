@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -32,6 +33,7 @@ public class UserController {
 
     @GetMapping("/search")
     @ApiOperation("Search by Criteria")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> search(@RequestParam(defaultValue = "") String keyword, @RequestParam(name = "status", required = false) UserStatus userstatus, @RequestParam(name = "role", required = false) AppUserRole userRole, @RequestParam(defaultValue = "1") int page,
                                          @RequestParam(defaultValue = "5") int size) {
         List<UserEntity> userEntities = userService.search(keyword, userstatus, userRole, page, size);

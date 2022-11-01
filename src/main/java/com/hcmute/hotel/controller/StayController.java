@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import com.hcmute.hotel.common.OrderByEnum;
+import com.hcmute.hotel.common.StaySortEnum;
+import com.hcmute.hotel.common.StayStatus;
 import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.handler.FileNotImageException;
 import com.hcmute.hotel.mapping.StayMapping;
@@ -20,15 +23,19 @@ import com.hcmute.hotel.service.ProvinceService;
 import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.UserService;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.aspectj.util.Reflection;
 import org.hibernate.query.criteria.internal.path.MapKeyHelpers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -61,6 +68,7 @@ public class StayController {
     static String E400="Bad Request";
     @PostMapping("")
     @ApiOperation("Add")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> addStay(HttpServletRequest req, @Valid @RequestBody AddNewStayRequest addNewStayRequest)
     {
         UserEntity user;
@@ -127,6 +135,7 @@ public class StayController {
     }
     @PatchMapping("/{id}")
     @ApiOperation("Update")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> updateStayInfo(@PathVariable("id") String id,@Valid @RequestBody UpdateStayRequest updateStayRequest,HttpServletRequest req)
     {
         UserEntity user;
@@ -156,6 +165,7 @@ public class StayController {
     }
     @DeleteMapping("/{id}")
     @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> deleteStay(@PathVariable("id") String id,HttpServletRequest req) {
         UserEntity user;
         try {
@@ -184,6 +194,7 @@ public class StayController {
     }
     @PostMapping("/stayAmenities/{id}")
     @ApiOperation("Add")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> addStayAmenities(@PathVariable("id") String id,HttpServletRequest req,@RequestParam String amenitiesId)
     {
         UserEntity user;
@@ -237,6 +248,7 @@ public class StayController {
     }
     @PostMapping("likeList/{id}")
     @ApiOperation("Create")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Object> addStayToLikeList(@PathVariable("id") String id,HttpServletRequest req)
     {
         UserEntity user;
@@ -270,6 +282,7 @@ public class StayController {
     }
     @GetMapping("/likeList")
     @ApiOperation("Get")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Object> getUserLikeList(HttpServletRequest req)
     {
         UserEntity user;
@@ -286,6 +299,7 @@ public class StayController {
     }
     @PostMapping(value = "/image/{id}",consumes = {"multipart/form-data"})
     @ApiOperation("Create")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> addStayImg(@PathVariable("id") String id, @RequestPart MultipartFile[] multipartFile,HttpServletRequest req) {
         UserEntity user;
         try {
@@ -312,6 +326,7 @@ public class StayController {
     }
     @DeleteMapping("/image/{id}")
     @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> deleteStayImg(@PathVariable("id") String id,@RequestParam String[] imageId,HttpServletRequest req) {
         UserEntity user;
         try {
@@ -339,8 +354,7 @@ public class StayController {
         }
     }
     @GetMapping("/paging/{provinceId}")
-    @ApiOperation("Search by Province")
-    @Secured("ADMIN")
+    @ApiOperation("Paging by Province")
     public ResponseEntity<Object> pagingProvince(@PathVariable("provinceId") String id,
                                                  @RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "5") int size)
@@ -361,6 +375,40 @@ public class StayController {
         pagingResponse.setSize(size);
         pagingResponse.setNumberOfElements(listStay.size());
         pagingResponse.setTotalElements(totalElements);
+        pagingResponse.setContent(Result);
+        return new ResponseEntity<>(pagingResponse ,HttpStatus.OK);
+    }
+    @GetMapping("/search")
+    @ApiOperation("Search")
+    public ResponseEntity<Object> searchByCriteria(
+            @RequestParam String provinceId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @RequestParam LocalDateTime checkInDate,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @RequestParam LocalDateTime checkOutDate,
+            @RequestParam(defaultValue = "5") int maxPeople,
+            @RequestParam(defaultValue = "1000") int maxPrice,
+            @RequestParam(defaultValue = "0") int minPrice,
+            @RequestParam(required = false) String[] amenitiesId,
+            @RequestParam(defaultValue = "price") StaySortEnum sort,
+            @RequestParam(defaultValue = "desc") OrderByEnum order)
+    {
+        Page<StayEntity> stayPage = stayService.searchByCriteria(provinceId,minPrice,maxPrice,checkInDate,checkOutDate,maxPeople,page,size,sort.getName(),order.getName());
+        List<StayEntity> listStay = stayPage.toList();
+        PagingResponse pagingResponse = new PagingResponse();
+        Map<String,Object> map = new HashMap<>();
+        List<Object> Result = Arrays.asList(listStay.toArray());
+        pagingResponse.setTotalPages(stayPage.getTotalPages());
+        pagingResponse.setEmpty(listStay.size()==0);
+        pagingResponse.setFirst(page==0);
+        pagingResponse.setLast(page == stayPage.getTotalPages()-1);
+        pagingResponse.getPageable().put("pageNumber",page);
+        pagingResponse.getPageable().put("pageSize",size);
+        pagingResponse.setSize(size);
+        pagingResponse.setNumberOfElements(listStay.size());
+        pagingResponse.setTotalElements((int) stayPage.getTotalElements());
         pagingResponse.setContent(Result);
         return new ResponseEntity<>(pagingResponse ,HttpStatus.OK);
     }

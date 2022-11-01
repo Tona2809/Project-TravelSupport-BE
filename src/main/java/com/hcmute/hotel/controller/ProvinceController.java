@@ -66,7 +66,7 @@ public class ProvinceController {
 
     @PostMapping("")
     @ApiOperation("Create")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Object> addProvince(@RequestBody @Valid AddNewProvinceRequest addNewProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest) throws Exception {
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null, result);

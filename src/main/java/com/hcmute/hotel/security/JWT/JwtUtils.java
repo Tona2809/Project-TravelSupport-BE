@@ -96,15 +96,14 @@ public class JwtUtils {
         DecodedJWT jwt = JWT.decode(token);
         return  jwt.getSubject();
     }
-//    public String generateRefreshJwtToken(AppUserDetail userPrincipal){
-//        Algorithm algorithm = Algorithm.HMAC256(jwtSecret.getBytes());
-//        return JWT.create()
-//                .withSubject(userPrincipal.getId().toString())
-//                .withExpiresAt(new Date(System.currentTimeMillis()+ refreshJwtExpirationMs))
-//                .withClaim("roleNames",userPrincipal.getRoles().stream().collect(Collectors.toList()))
-//                .withClaim("rolePermissions",userPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-//                .sign(algorithm);
-//    }
+    public String generateRefreshJwtToken(AppUserDetail userPrincipal){
+        Algorithm algorithm = Algorithm.HMAC256(jwtSecret.getBytes());
+        return JWT.create()
+                .withSubject(userPrincipal.getId().toString())
+                .withExpiresAt(new Date(System.currentTimeMillis()+ refreshJwtExpirationMs))
+                .withClaim("roles",userPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+                .sign(algorithm);
+    }
 
     public boolean validateExpiredToken(String authToken) {
         DecodedJWT jwt = JWT.decode(authToken);

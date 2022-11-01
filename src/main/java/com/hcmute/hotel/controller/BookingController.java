@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +44,7 @@ public class BookingController {
     public static final String CANCEL_URL = "/api/order/pay/cancel";
     @PostMapping("")
     @ApiOperation("Create")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Object> addBooking(@RequestBody @Valid AddNewBookingRequest addNewBookingRequest, HttpServletRequest req)
     {
         UserEntity user;

@@ -60,7 +60,6 @@ public class AmenitiesController {
     }
     @GetMapping("")
     @ApiOperation("Get All")
-
     public ResponseEntity<Object> getAllAmenities()
     {
         List<AmenitiesEntity> listAmenities = amenitiesService.getAllAmenities();

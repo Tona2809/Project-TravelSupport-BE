@@ -9,9 +9,9 @@ import javax.validation.constraints.NotEmpty;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class PhoneLoginRequest {
+public class EmailLoginRequest {
     @NotEmpty
-    String phone;
+    String Email;
     @NotEmpty
     String password;
 }

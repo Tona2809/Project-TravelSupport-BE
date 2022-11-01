@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -46,6 +47,7 @@ public class StayRatingController {
     static String E400="Bad Request";
     @PostMapping("")
     @ApiOperation("Add")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Object> addStayRating(@RequestBody @Valid AddNewStayRatingRequest addNewStayRatingRequest,BindingResult result, HttpServletRequest req) throws Exception {
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null,result);
@@ -67,6 +69,7 @@ public class StayRatingController {
     }
     @PatchMapping("")
     @ApiOperation("Update")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Object> updateStayRating(@Valid @RequestBody UpdateStayRatingRequest updateStayRatingRequest, BindingResult errors, HttpServletRequest req) throws Exception {
         if (errors.hasErrors()) {
             throw new MethodArgumentNotValidException(null,errors);
@@ -118,6 +121,7 @@ public class StayRatingController {
     }
     @DeleteMapping("/{id}")
     @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_USER')|| hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object>deleteHotelRating(@PathVariable("id") String id,HttpServletRequest req){
         UserEntity user;
         try {

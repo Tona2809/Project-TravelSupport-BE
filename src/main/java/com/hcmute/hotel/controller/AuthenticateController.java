@@ -5,7 +5,7 @@ import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
 import com.hcmute.hotel.model.payload.request.Authenticate.AddNewCustomerRequest;
 import com.hcmute.hotel.model.payload.request.Authenticate.AddNewOwnerRequest;
-import com.hcmute.hotel.model.payload.request.Authenticate.PhoneLoginRequest;
+import com.hcmute.hotel.model.payload.request.Authenticate.EmailLoginRequest;
 import com.hcmute.hotel.model.payload.request.Authenticate.RefreshTokenRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.ErrorResponseMap;
@@ -129,15 +129,15 @@ public class AuthenticateController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody @Valid PhoneLoginRequest user, BindingResult errors, HttpServletResponse resp) {
+    public ResponseEntity<Object> login(@RequestBody @Valid EmailLoginRequest user, BindingResult errors, HttpServletResponse resp) {
         if(errors.hasErrors()) {
             return null;
         }
-        if(userService.findByPhone(user.getPhone())==null) {
+        if(userService.findByEmail(user.getEmail())==null) {
             return new ResponseEntity<>(new ErrorResponse( E404,"USER_NOT_FOUND","User not found"),HttpStatus.NOT_FOUND);
         }
 
-        UserEntity loginUser=userService.findByPhone(user.getPhone());
+        UserEntity loginUser=userService.findByEmail(user.getEmail());
         if(!passwordEncoder.matches(user.getPassword(),loginUser.getPassword())) {
             return new ResponseEntity<>(new ErrorResponse(E404,"INVALID_PASSWORD","Wrong Password"),HttpStatus.NOT_FOUND);
         }
