@@ -381,13 +381,13 @@ public class StayController {
     @GetMapping("/search")
     @ApiOperation("Search")
     public ResponseEntity<Object> searchByCriteria(
-            @RequestParam String provinceId,
+            @RequestParam(required = false) String provinceId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            @RequestParam LocalDateTime checkInDate,
+            @RequestParam(required = false,defaultValue = "") LocalDateTime checkInDate,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            @RequestParam LocalDateTime checkOutDate,
+            @RequestParam(required = false,defaultValue = "") LocalDateTime checkOutDate,
             @RequestParam(defaultValue = "5") int maxPeople,
             @RequestParam(defaultValue = "1000") int maxPrice,
             @RequestParam(defaultValue = "0") int minPrice,

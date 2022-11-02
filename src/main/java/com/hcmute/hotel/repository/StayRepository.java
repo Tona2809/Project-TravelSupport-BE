@@ -18,6 +18,6 @@ public interface StayRepository extends JpaRepository<StayEntity,String> {
     @Query(value = "Select * from stays where province=?1",nativeQuery = true)
     Page<StayEntity> findALlStayByProvinceId(String provinceId,Pageable pageable);
     List<StayEntity> findAllByProvince(ProvinceEntity province);
-    @Query(value = "Select s.* from stays s where (s.province=?1 and (s.price between ?2 and ?3) and (?4 between s.time_open and s.time_close and ?5 between s.time_open and s.time_close) and (s.max_people>=?6))",nativeQuery = true)
+    @Query(value = "Select * from stays  where ((province=?1 or ?1 is null) and (price between ?2 and ?3) and (((?4 between time_open and time_close) or ?4 is null) and ((?5 between time_open and time_close) or ?5 is null)) and (max_people>=?6))",nativeQuery = true)
     Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate, int maxPeople, String sort, String orderBy, Pageable paging);
 }
