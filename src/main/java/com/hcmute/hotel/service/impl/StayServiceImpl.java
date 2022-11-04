@@ -72,7 +72,7 @@ public class StayServiceImpl implements StayService {
                 throw new FileNotImageException("This file is not Image type");
             else {
                 StayImageEntity img = new StayImageEntity();
-                String url = imageStorageService.saveHotelImage(file,stay.getId()+ "/img" + img.getImgId());
+                String url = imageStorageService.saveHotelImage(file,stay.getName()+ "/img" + img.getImgId());
                 stay.getStayImage().add(img);
                 stayRepository.save(stay);
                 img.setImgLink(url);

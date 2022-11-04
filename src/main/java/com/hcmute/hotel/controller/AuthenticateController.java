@@ -1,5 +1,6 @@
 package com.hcmute.hotel.controller;
 
+import com.hcmute.hotel.common.AppUserRole;
 import com.hcmute.hotel.mapping.UserMapping;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
@@ -68,7 +69,7 @@ public class AuthenticateController {
         try{
             user.setEnabled(false);
             user.setVerificationCode(RandomString.make(64));
-            user=userService.register(user,"USER");
+            user=userService.register(user, AppUserRole.ROLE_USER);
             if (user==null)
             {
                 return new ResponseEntity<>(new ErrorResponse(E404,"USER_NOT_CREATED","Add user false"),HttpStatus.NOT_FOUND);
@@ -95,7 +96,7 @@ public class AuthenticateController {
         user= UserMapping.registerOwnerToEntity(user,request);
         try{
             user.setVerificationCode(null);
-            user=userService.register(user,"OWNER");
+            user=userService.register(user,AppUserRole.ROLE_OWNER);
             if (user==null)
             {
                 return new ResponseEntity<>(new ErrorResponse(E404,"USER_NOT_CREATED","Add user false"),HttpStatus.NOT_FOUND);

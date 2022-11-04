@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity register(UserEntity user, String role) {
+    public UserEntity register(UserEntity user, AppUserRole role) {
         RoleEntity roleEntity = roleRepository.findByName(role);
         Set<RoleEntity> roles = new HashSet<>();
         roles.add(roleEntity);

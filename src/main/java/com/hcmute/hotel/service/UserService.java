@@ -13,7 +13,7 @@ import java.util.UUID;
 @Component
 @Service
 public interface UserService {
-UserEntity register(UserEntity user,String role);
+UserEntity register(UserEntity user,AppUserRole role);
 
 UserEntity findByPhone(String phone);
 
