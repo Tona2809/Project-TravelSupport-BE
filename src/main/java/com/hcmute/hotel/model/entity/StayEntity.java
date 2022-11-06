@@ -67,7 +67,6 @@ public class StayEntity {
     private LocalDateTime latestUpdateAt;
     @Column(name = "\"type\"")
     private String type;
-    @JsonIgnore
     @ManyToMany(mappedBy = "stayLiked",targetEntity = UserEntity.class)
     Set<UserEntity> userLiked;
     @ManyToOne()
