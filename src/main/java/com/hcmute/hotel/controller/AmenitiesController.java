@@ -1,6 +1,7 @@
 package com.hcmute.hotel.controller;
 
 import com.hcmute.hotel.handler.AuthenticateHandler;
+import com.hcmute.hotel.handler.FileNotImageException;
 import com.hcmute.hotel.model.entity.AmenitiesEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
@@ -15,11 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @ComponentScan
 @RestController
@@ -32,10 +35,10 @@ public class AmenitiesController {
     private final AmenitiesService amenitiesService;
     @Autowired
     AuthenticateHandler authenticateHandler;
-    @PostMapping("")
+    @PostMapping(value = "",consumes = {"multipart/form-data"})
     @ApiOperation("Create")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> addNewAmenities(@RequestParam String name, HttpServletRequest req)
+    public ResponseEntity<Object> addNewAmenities(@RequestParam String name, HttpServletRequest req, @RequestPart MultipartFile file)
     {
         UserEntity user;
         try
@@ -49,10 +52,18 @@ public class AmenitiesController {
             else
             {
                 amenities= new AmenitiesEntity();
+                String uuid = String.valueOf(UUID.randomUUID());
+                amenities.setId(uuid);
                 amenities.setName(name);
+                String url = amenitiesService.addAmenitiesIcon(file,amenities);
+                amenities.setIcons(url);
                 amenities=amenitiesService.addAmenities(amenities);
                 return new ResponseEntity<>(amenities,HttpStatus.OK);
             }
+        }
+        catch (FileNotImageException fileNotImageException)
+        {
+            return new ResponseEntity<>(new ErrorResponse("Unsupported Media Type","FILE_NOT_IMAGE",fileNotImageException.getMessage()),HttpStatus.UNSUPPORTED_MEDIA_TYPE);
         }
         catch (BadCredentialsException e) {
         return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);

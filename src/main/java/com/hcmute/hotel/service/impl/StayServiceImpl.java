@@ -111,10 +111,10 @@ public class StayServiceImpl implements StayService {
     }
 
     @Override
-    public Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate, int maxPeople, int pageNo, int pageSize, String sort, String orderBy) {
+    public Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate,String status,boolean hidden, int maxPeople, int pageNo, int pageSize, String sort, String orderBy) {
         Pageable paging=null;
         paging= PageRequest.of(pageNo,pageSize,orderBy=="asc" ? Sort.by(sort).ascending() : Sort.by(sort).descending());
-        Page<StayEntity> pageResult=stayRepository.searchByCriteria(provinceId, minPrice,maxPrice, checkinDate, checkoutDate, maxPeople, sort, orderBy,paging);
+        Page<StayEntity> pageResult=stayRepository.searchByCriteria(provinceId, minPrice,maxPrice, checkinDate, checkoutDate, maxPeople,status,hidden,sort, orderBy,paging);
         pageResult.getTotalElements();
         return pageResult;
     }

@@ -28,5 +28,5 @@ public interface StayService {
     List<StayEntity> pagingByProvince(String provinceId,int pageNo,int pageSize);
     List<StayEntity> findAllStayByProvince(ProvinceEntity province);
 
-    Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate, int maxPeople, int pageNo, int pageSize, String sort, String orderBy);
+    Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate,String status,boolean hidden, int maxPeople, int pageNo, int pageSize, String sort, String orderBy);
 }

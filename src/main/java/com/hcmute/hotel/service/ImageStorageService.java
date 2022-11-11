@@ -11,4 +11,5 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ImageStorageService {
     String saveHotelImage(MultipartFile file, String fileName);
     String saveProvinceImage(MultipartFile file,String fileName);
+    String saveAmenitiesImage(MultipartFile file,String fileName);
 }

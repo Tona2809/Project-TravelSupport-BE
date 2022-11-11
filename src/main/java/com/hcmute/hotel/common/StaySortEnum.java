@@ -10,5 +10,4 @@ public enum StaySortEnum {
     MAX_PEOPLE("max_people"),
     PRICE("price");
     private String name;
-
 }

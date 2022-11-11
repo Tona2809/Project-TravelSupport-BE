@@ -23,10 +23,20 @@ public class AmenitiesEntity {
     private String id;
     @Column(name = "\"name\"")
     private String name;
+    @Column(name = "\"icons\"")
+    private String icons;
 
     @ManyToMany(mappedBy = "amenities")
     @JsonIgnore
     Set<StayEntity> stays;
+
+    public String getIcons() {
+        return icons;
+    }
+
+    public void setIcons(String icons) {
+        this.icons = icons;
+    }
 
     public Set<StayEntity> getStays() {
         return stays;

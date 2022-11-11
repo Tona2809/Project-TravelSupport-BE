@@ -42,4 +42,14 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         }
         return (String) r.get("secure_url");
     }
+
+    @Override
+    public String saveAmenitiesImage(MultipartFile file, String fileName) {
+        try {
+            r = this.cloudinary().uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type","auto","upload_preset","bang","public_id","amenities_image/"+fileName));
+        } catch (IOException e) {
+            throw new RuntimeException("Upload fail");
+        }
+        return (String) r.get("secure_url");
+    }
 }

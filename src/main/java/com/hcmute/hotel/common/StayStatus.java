@@ -7,6 +7,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum StayStatus {
-AVAILABLE("Available"),UNAVAILABLE("Unavailable");
+    NULL("null"),
+    AVAILABLE("0"),
+    UNAVAILABLE("1");
 private String name;
 }

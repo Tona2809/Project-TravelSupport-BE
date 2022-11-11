@@ -49,7 +49,6 @@ import javax.validation.Valid;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
-
 @ComponentScan
 @RestController
 @RequestMapping("/api/stay")
@@ -82,7 +81,9 @@ public class StayController {
                 return new ResponseEntity<>(new ErrorResponse(E404,"PROVINCE_NOT_FOUND","Can't find Province with id provided"),HttpStatus.NOT_FOUND);
             }
             stay.setProvince(province);
+            province.setPlaceCount(province.getPlaceCount()+1);
             stay = stayService.saveStay(stay);
+            provinceService.saveProvince(province);
             return new ResponseEntity<>(stay, HttpStatus.OK);
         }
         catch (BadCredentialsException e) {
@@ -184,7 +185,10 @@ public class StayController {
                 ProvinceEntity province = provinceService.getProvinceById(stay.getProvince().getId());
                 if (province!=null)
                 province.getStay().remove(province);
+                province.setPlaceCount(province.getPlaceCount()-1);
+                province.getStay().remove(stay);
                 stayService.deleteStay(id);
+                provinceService.saveProvince(province);
                 return new ResponseEntity<>( HttpStatus.OK);
             }
         } catch (BadCredentialsException e) {
@@ -392,10 +396,12 @@ public class StayController {
             @RequestParam(defaultValue = "1000") int maxPrice,
             @RequestParam(defaultValue = "0") int minPrice,
             @RequestParam(required = false) String[] amenitiesId,
-            @RequestParam(defaultValue = "price") StaySortEnum sort,
-            @RequestParam(defaultValue = "desc") OrderByEnum order)
+            @RequestParam(defaultValue = "PRICE") StaySortEnum sort,
+            @RequestParam(defaultValue = "DESCENDING") OrderByEnum order,
+            @RequestParam(defaultValue = "NULL") StayStatus status,
+            @RequestParam(required = false)boolean hidden)
     {
-        Page<StayEntity> stayPage = stayService.searchByCriteria(provinceId,minPrice,maxPrice,checkInDate,checkOutDate,maxPeople,page,size,sort.getName(),order.getName());
+        Page<StayEntity> stayPage = stayService.searchByCriteria(provinceId,minPrice,maxPrice,checkInDate,checkOutDate,status.getName(),hidden,maxPeople,page,size,sort.getName(),order.getName());
         List<StayEntity> listStay = stayPage.toList();
         PagingResponse pagingResponse = new PagingResponse();
         Map<String,Object> map = new HashMap<>();
