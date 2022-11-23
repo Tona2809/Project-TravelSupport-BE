@@ -1,10 +1,12 @@
 package com.hcmute.hotel.controller;
 
 import com.hcmute.hotel.common.AppUserRole;
+import com.hcmute.hotel.common.GenderEnum;
 import com.hcmute.hotel.common.UserStatus;
 import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.handler.FileNotImageException;
 import com.hcmute.hotel.model.entity.UserEntity;
+import com.hcmute.hotel.model.payload.request.User.AddUserInfoRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.PagingResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -64,29 +67,56 @@ public class UserController {
         pagingResponse.setContent(Result);
         return new ResponseEntity<>(pagingResponse, HttpStatus.OK);
     }
-    @PostMapping(value = "/image",consumes = {"multipart/form-data"})
+
+    @PostMapping(value = "/image", consumes = {"multipart/form-data"})
     @ApiOperation("Upload User Image")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<Object>  addUserImage(@RequestPart MultipartFile file, HttpServletRequest req)
-    {
+    public ResponseEntity<Object> addUserImage(@RequestPart MultipartFile file, HttpServletRequest req) {
         UserEntity user;
         try {
             user = authenticateHandler.authenticateUser(req);
-            user = userService.addUserImage(file,user);
-            return new ResponseEntity<>(user,HttpStatus.OK);
-        }
-        catch (BadCredentialsException e)
-        {
+            user = userService.addUserImage(file, user);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        } catch (FileNotImageException fileNotImageException) {
+            return new ResponseEntity<>(new ErrorResponse("Unsupported Media Type", "FILE_NOT_IMAGE", fileNotImageException.getMessage()), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(new ErrorResponse(E400, "FAIL_TO_UPLOAD", runtimeException.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        catch (FileNotImageException fileNotImageException)
-        {
-            return new ResponseEntity<>(new ErrorResponse("Unsupported Media Type","FILE_NOT_IMAGE",fileNotImageException.getMessage()),HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    @PostMapping(value = "/userInfo", consumes = {"multipart/form-data"})
+    @ApiOperation("Create User Info")
+    public ResponseEntity<Object> addUserInfo(@Valid AddUserInfoRequest addUserInfoRequest, @RequestParam String gender, @RequestPart MultipartFile file, HttpServletRequest req) {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            user.setFullName(addUserInfoRequest.getFullName());
+            user.setPhone(addUserInfoRequest.getPhone());
+            user.setGender(gender);
+            user = userService.addUserImage(file, user);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        } catch (FileNotImageException fileNotImageException) {
+            return new ResponseEntity<>(new ErrorResponse("Unsupported Media Type", "FILE_NOT_IMAGE", fileNotImageException.getMessage()), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(new ErrorResponse(E400, "FAIL_TO_UPLOAD", runtimeException.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        catch (RuntimeException runtimeException)
-        {
-            return new ResponseEntity<>(new ErrorResponse(E400,"FAIL_TO_UPLOAD",runtimeException.getMessage()),HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/userInfo")
+    @ApiOperation("Get User Info")
+    public ResponseEntity<Object> getUserInfo(HttpServletRequest req) {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
 
 }
+
