@@ -6,6 +6,7 @@ import com.hcmute.hotel.model.entity.UserEntity;
 import org.apache.catalina.User;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,4 +25,5 @@ UserEntity findByPhone(String phone);
     UserEntity findByVerificationCode(String code);
 
     List<UserEntity> search(String keyword, UserStatus userstatus, AppUserRole userRole, int page, int size);
+    UserEntity addUserImage(MultipartFile file,UserEntity user);
 }

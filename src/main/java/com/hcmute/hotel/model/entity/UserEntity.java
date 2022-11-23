@@ -111,6 +111,17 @@ public class UserEntity {
     @Column(name = "\"enabled\"")
     private boolean enabled;
 
+    @Column(name = "\"image_link\"")
+    private String imgLink;
+
+    public String getImgLink() {
+        return imgLink;
+    }
+
+    public void setImgLink(String imgLink) {
+        this.imgLink = imgLink;
+    }
+
     public String getVerificationCode() {
         return verificationCode;
     }

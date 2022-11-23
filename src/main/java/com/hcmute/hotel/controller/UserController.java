@@ -2,7 +2,10 @@ package com.hcmute.hotel.controller;
 
 import com.hcmute.hotel.common.AppUserRole;
 import com.hcmute.hotel.common.UserStatus;
+import com.hcmute.hotel.handler.AuthenticateHandler;
+import com.hcmute.hotel.handler.FileNotImageException;
 import com.hcmute.hotel.model.entity.UserEntity;
+import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.PagingResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.UserService;
@@ -13,13 +16,19 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.hcmute.hotel.controller.StayController.E400;
+import static com.hcmute.hotel.controller.StayController.E401;
 
 
 @ComponentScan
@@ -28,6 +37,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final AuthenticateHandler authenticateHandler;
     @Autowired
     JwtUtils jwtUtils;
 
@@ -54,4 +64,29 @@ public class UserController {
         pagingResponse.setContent(Result);
         return new ResponseEntity<>(pagingResponse, HttpStatus.OK);
     }
+    @PostMapping(value = "/image",consumes = {"multipart/form-data"})
+    @ApiOperation("Upload User Image")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<Object>  addUserImage(@RequestPart MultipartFile file, HttpServletRequest req)
+    {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            user = userService.addUserImage(file,user);
+            return new ResponseEntity<>(user,HttpStatus.OK);
+        }
+        catch (BadCredentialsException e)
+        {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+        catch (FileNotImageException fileNotImageException)
+        {
+            return new ResponseEntity<>(new ErrorResponse("Unsupported Media Type","FILE_NOT_IMAGE",fileNotImageException.getMessage()),HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        }
+        catch (RuntimeException runtimeException)
+        {
+            return new ResponseEntity<>(new ErrorResponse(E400,"FAIL_TO_UPLOAD",runtimeException.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

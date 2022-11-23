@@ -357,37 +357,12 @@ public class StayController {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
-    @GetMapping("/paging/{provinceId}")
-    @ApiOperation("Paging by Province")
-    public ResponseEntity<Object> pagingProvince(@PathVariable("provinceId") String id,
-                                                 @RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "5") int size)
-    {
-        List<StayEntity> listStay = stayService.pagingByProvince(id,page,size);
-        ProvinceEntity province = provinceService.getProvinceById(id);
-        int totalElements= stayService.findAllStayByProvince(province).size();
-        int totalPage=totalElements%size==0 ? totalElements/size : totalElements/size+1;
-        PagingResponse pagingResponse = new PagingResponse();
-        Map<String,Object> map = new HashMap<>();
-        List<Object> Result = Arrays.asList(listStay.toArray());
-        pagingResponse.setTotalPages(totalPage);
-        pagingResponse.setEmpty(listStay.size()==0);
-        pagingResponse.setFirst(page==0);
-        pagingResponse.setLast(page == totalPage-1);
-        pagingResponse.getPageable().put("pageNumber",page);
-        pagingResponse.getPageable().put("pageSize",size);
-        pagingResponse.setSize(size);
-        pagingResponse.setNumberOfElements(listStay.size());
-        pagingResponse.setTotalElements(totalElements);
-        pagingResponse.setContent(Result);
-        return new ResponseEntity<>(pagingResponse ,HttpStatus.OK);
-    }
     @GetMapping("/search")
     @ApiOperation("Search")
     public ResponseEntity<Object> searchByCriteria(
             @RequestParam(required = false) String provinceId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "0",name = "pageIndex") int page,
+            @RequestParam(defaultValue = "5",name = "pageSize") int size,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             @RequestParam(required = false,defaultValue = "") LocalDateTime checkInDate,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)

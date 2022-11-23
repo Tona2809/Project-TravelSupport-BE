@@ -47,7 +47,7 @@ public class EmailServiceImpl implements EmailService {
         helper.setFrom("dilawabms900@gmail.com",senderName);
         helper.setTo(toAddress);
         helper.setSubject(subject);
-        String verifyURL = siteURL + "/api/authenticate/verify/" + user.getVerificationCode();
+        String verifyURL = "http://travel.eba-diweyejm.us-east-1.elasticbeanstalk.com" + "/api/authenticate/verify/" + user.getVerificationCode();
         content = content.replace("[[URL]]", verifyURL);
         helper.setText(content, true);
         emailSender.send(message);
