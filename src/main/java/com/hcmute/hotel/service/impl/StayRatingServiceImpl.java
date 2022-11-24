@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +30,7 @@ public class StayRatingServiceImpl implements StayRatingService {
         stayRating.setMessage(addNewStayRatingRequest.getMessage());
         stayRating.setStay(stayService.getStayById(addNewStayRatingRequest.getStayid()));
         stayRating.setRate(addNewStayRatingRequest.getRate());
-        stayRating.setCreated_at(LocalDateTime.now());
+        stayRating.setCreated_at(LocalDateTime.now(ZoneId.of("GMT+07:00")));
         stayRating.setUserRating(user);
         return stayRatingRepository.save(stayRating);
     }
