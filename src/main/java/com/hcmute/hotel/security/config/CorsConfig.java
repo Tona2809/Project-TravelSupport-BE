@@ -16,7 +16,8 @@ public class CorsConfig {
                         .allowedMethods("GET","POST","DELETE","PUT","OPTIONS","PATCH")
                         .allowedHeaders("*")
                         .allowedOrigins("http://localhost:3000/","http://localhost:8080/"
-                        ,"https://gorgeous-pastelito-2fb64c.netlify.app/","https://2a5d-2001-ee0-4f4e-8cc0-65c7-8c8f-7b91-3ddb.ngrok.io/")
+                        ,"https://gorgeous-pastelito-2fb64c.netlify.app/","https://2a5d-2001-ee0-4f4e-8cc0-65c7-8c8f-7b91-3ddb.ngrok.io/",
+                                "https://utetravel.onrender.com/")
                         .allowCredentials(true)
                         .maxAge(3600);
             }
