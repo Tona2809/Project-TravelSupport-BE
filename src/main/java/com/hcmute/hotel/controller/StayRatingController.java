@@ -56,7 +56,7 @@ public class StayRatingController {
         try {
             user = authenticateHandler.authenticateUser(req);
             StayEntity stay = stayService.getStayById(addNewStayRatingRequest.getStayid());
-            if (stay.getHost()==user || stay==null )
+            if ( stay==null || stay.getHost()==user  )
             {
                 return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND_OR_OWNER","Can't find Stay with id provided or you are stay owner"),HttpStatus.NOT_FOUND);
             }
@@ -141,5 +141,6 @@ public class StayRatingController {
             return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
+
 
 }

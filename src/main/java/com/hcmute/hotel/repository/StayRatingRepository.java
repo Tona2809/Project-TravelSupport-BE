@@ -12,5 +12,8 @@ public interface StayRatingRepository extends JpaRepository<StayRatingEntity,Str
     @Modifying
     @Query(value =  "Delete from stay_rating where id = ?", nativeQuery = true)
     void deleteById(String id);
+
+    @Query(value = "SELECT * From stay_rating order by created_at desc",nativeQuery = true)
+    List<StayRatingEntity> getAllStayRating();
     List<StayRatingEntity> findByStay(StayEntity stay);
 }

@@ -45,7 +45,7 @@ public class StayRatingServiceImpl implements StayRatingService {
 
     @Override
     public List<StayRatingEntity> getAllStayRating() {
-        List<StayRatingEntity>listStayRating =stayRatingRepository.findAll();
+        List<StayRatingEntity>listStayRating =stayRatingRepository.getAllStayRating();
         return listStayRating;
     }
 

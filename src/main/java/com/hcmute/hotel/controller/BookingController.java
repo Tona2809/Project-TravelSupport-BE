@@ -12,6 +12,7 @@ import com.hcmute.hotel.service.StayService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ import javax.validation.Valid;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.hcmute.hotel.controller.StayController.*;
 
@@ -135,5 +139,20 @@ public class BookingController {
     @GetMapping("/pay/cancel/{id}")
     public ResponseEntity<Object> paypalCancel(@PathVariable("id") int id) {
         return new ResponseEntity<>(new ErrorResponse(E400,"BOOKING_FAIL","Booking failure"),HttpStatus.BAD_REQUEST);
+    }
+    @GetMapping("")
+    @ApiOperation("Get User Booking")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<Object> getUserBooking(HttpServletRequest req) {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            List<BookingEntity> list = bookingService.getUserBooking(user.getId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", list);
+            return new ResponseEntity<>(map, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
     }
 }

@@ -50,6 +50,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserEntity> getAll() {
+        List<UserEntity> list = userRepository.findAll();
+        return list;
+    }
+
+    @Override
     public UserEntity register(UserEntity user, AppUserRole role) {
         RoleEntity roleEntity = roleRepository.findByName(role);
         Set<RoleEntity> roles = new HashSet<>();

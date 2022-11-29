@@ -46,4 +46,10 @@ public class BookingServiceImpl implements BookingService {
         List<BookingEntity> list = bookingRepository.checkUserDateValidate(userId,checkinDate,checkoutDate);
         return list.isEmpty();
     }
+
+    @Override
+    public List<BookingEntity> getUserBooking(String userId) {
+        List<BookingEntity> list = bookingRepository.getUserBooking(userId);
+        return list;
+    }
 }

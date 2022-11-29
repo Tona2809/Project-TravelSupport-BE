@@ -15,6 +15,6 @@ public interface BookingService {
     boolean checkinValidate(String stayId, LocalDateTime checkinDate);
     boolean checkoutValidate(String stayId,LocalDateTime checkinDate,LocalDateTime checkoutDate);
     BookingEntity findBookingById(String id);
-
     boolean checkUserDateValidate(String userId,LocalDateTime checkinDate,LocalDateTime checkoutDate);
+    List<BookingEntity> getUserBooking(String userId);
 }

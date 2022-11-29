@@ -26,4 +26,6 @@ UserEntity findByPhone(String phone);
 
     List<UserEntity> search(String keyword, UserStatus userstatus, AppUserRole userRole, int page, int size);
     UserEntity addUserImage(MultipartFile file,UserEntity user);
+
+    List<UserEntity> getAll();
 }

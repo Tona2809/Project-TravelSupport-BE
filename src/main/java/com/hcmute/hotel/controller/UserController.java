@@ -13,6 +13,7 @@ import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
@@ -116,6 +117,11 @@ public class UserController {
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
+    }
+    @GetMapping("/listUserInfo")
+    @ApiOperation("Get List User")
+    public ResponseEntity<Object> getUserList() {
+        return new ResponseEntity<>(userService.getAll(),HttpStatus.OK);
     }
 
 }
