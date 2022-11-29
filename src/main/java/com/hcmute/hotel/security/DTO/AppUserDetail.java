@@ -3,6 +3,7 @@ package com.hcmute.hotel.security.DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hcmute.hotel.model.entity.UserEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +19,7 @@ public class AppUserDetail implements UserDetails {
     private String email;
     @JsonIgnore
     private String password;
-    private UserEntity user;
+    @Autowired
     private Collection<? extends GrantedAuthority> authorities;
     private Collection<String> roles;
 
