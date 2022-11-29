@@ -15,6 +15,6 @@ public interface BookingRepository extends JpaRepository<BookingEntity,String> {
     List<BookingEntity> checkoutValidate(String stayId,LocalDateTime checkin,LocalDateTime checkout);
     @Query(value = "select * from bookings where user_id=?1 and ((checkin_date between ?2 and ?3) || (checkout_date between ?2 and?3)) and status=1",nativeQuery = true)
     List<BookingEntity> checkUserDateValidate(String userId,LocalDateTime checkin,LocalDateTime checkout);
-    @Query(value = "Select * from bookings where user_id=?1 and status=1",nativeQuery = true)
+    @Query(value = "Select * from bookings where user_id=?1 and status=1 order by create_at asc",nativeQuery = true)
     List<BookingEntity> getUserBooking(String userId);
 }
