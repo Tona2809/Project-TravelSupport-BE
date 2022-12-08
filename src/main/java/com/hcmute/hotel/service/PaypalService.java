@@ -1,5 +1,6 @@
 package com.hcmute.hotel.service;
 
+import com.hcmute.hotel.config.PaypalConfig;
 import com.hcmute.hotel.model.entity.BookingEntity;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
@@ -13,8 +14,10 @@ import java.util.List;
 @Service
 public class PaypalService {
 
-    @Autowired
+    @Autowired()
     private APIContext apiContext;
+    @Autowired()
+    private PaypalConfig paypalConfig;
     public Payment createPayment(
             BookingEntity booking,
             String currency,
@@ -62,6 +65,7 @@ public class PaypalService {
         redirectUrls.setCancelUrl(cancelUrl);
         redirectUrls.setReturnUrl(successUrl);
         payment.setRedirectUrls(redirectUrls);
+        apiContext=paypalConfig.apiContext();
         return payment.create(apiContext);
     }
 
@@ -70,6 +74,7 @@ public class PaypalService {
         payment.setId(paymentId);
         PaymentExecution paymentExecute = new PaymentExecution();
         paymentExecute.setPayerId(payerId);
+        apiContext=paypalConfig.apiContext();
         return payment.execute(apiContext, paymentExecute);
     }
 

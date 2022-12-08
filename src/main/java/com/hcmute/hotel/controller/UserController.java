@@ -123,6 +123,5 @@ public class UserController {
     public ResponseEntity<Object> getUserList() {
         return new ResponseEntity<>(userService.getAll(),HttpStatus.OK);
     }
-
 }
 

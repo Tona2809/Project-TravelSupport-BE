@@ -71,13 +71,13 @@ public class AuthenticateController {
         }
 
         try {
-            user.setEnabled(false);
-            user.setVerificationCode(RandomString.make(64));
+            user.setEnabled(true);
+//            user.setVerificationCode(RandomString.make(64));
             user = userService.register(user, AppUserRole.ROLE_USER);
             if (user == null) {
                 return new ResponseEntity<>(new ErrorResponse(E404, "USER_NOT_CREATED", "Add user false"), HttpStatus.NOT_FOUND);
             }
-            emailService.sendConfirmCustomerEmail(user, req.getHeader("origin"));
+//            emailService.sendConfirmCustomerEmail(user, req.getHeader("origin"));
         } catch (Exception e) {
             e.printStackTrace();
         }
