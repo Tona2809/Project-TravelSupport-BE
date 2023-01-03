@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import java.time.LocalDateTime;
 import java.util.List;
 @EnableJpaRepositories
-
 public interface StayRepository extends JpaRepository<StayEntity,String> {
     List<StayEntity> findAllByHost(UserEntity user);
     @Query(value = "Select * from stays where province=?1",nativeQuery = true)

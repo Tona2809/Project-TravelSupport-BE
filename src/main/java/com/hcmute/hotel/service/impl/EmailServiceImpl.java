@@ -44,10 +44,10 @@ public class EmailServiceImpl implements EmailService {
                 + "UTETravel.";
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom("dilawabms900@gmail.com",senderName);
+        helper.setFrom("managementsitetrack@gmail.com",senderName);
         helper.setTo(toAddress);
         helper.setSubject(subject);
-        String verifyURL = "http://localhost:5000" + "/api/authenticate/verify/" + user.getVerificationCode();
+        String verifyURL = "http://localhost:3000" + "/api/authenticate/verify/" + user.getVerificationCode();
         content = content.replace("[[URL]]", verifyURL);
         helper.setText(content, true);
         emailSender.send(message);

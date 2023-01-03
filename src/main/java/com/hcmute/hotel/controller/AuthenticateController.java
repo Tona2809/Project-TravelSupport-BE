@@ -72,12 +72,12 @@ public class AuthenticateController {
 
         try {
             user.setEnabled(true);
-//            user.setVerificationCode(RandomString.make(64));
+            user.setVerificationCode(RandomString.make(64));
             user = userService.register(user, AppUserRole.ROLE_USER);
             if (user == null) {
                 return new ResponseEntity<>(new ErrorResponse(E404, "USER_NOT_CREATED", "Add user false"), HttpStatus.NOT_FOUND);
             }
-//            emailService.sendConfirmCustomerEmail(user, req.getHeader("origin"));
+            emailService.sendConfirmCustomerEmail(user, req.getHeader("origin"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -251,7 +251,7 @@ public class AuthenticateController {
 
     @PostMapping("/changePassword")
     @ApiOperation("Change Password")
-    public ResponseEntity<Object> changepassword(HttpServletRequest request, @RequestBody ChangePasswrodRequest changePasswrodRequest) throws Exception {
+    public ResponseEntity<Object> changePassword(HttpServletRequest request, @RequestBody ChangePasswrodRequest changePasswrodRequest) throws Exception {
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String accessToken = authorizationHeader.substring("Bearer ".length());

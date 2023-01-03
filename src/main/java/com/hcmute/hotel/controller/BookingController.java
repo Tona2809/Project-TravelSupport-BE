@@ -105,7 +105,7 @@ public class BookingController {
             booking=bookingService.addBooking(booking);
             Payment paypalPayment = paypalService.createPayment(booking, "USD", "paypal",
                     "sale", req.getHeader("origin") + CANCEL_URL+"/"+booking.getId(),
-                    "http://localhost:5000"+ SUCCESS_URL +"/"+booking.getId());
+                    "http://localhost:3000"+ SUCCESS_URL +"/"+booking.getId());
             for (Links link : paypalPayment.getLinks()) {
                 if (link.getRel().equals("approval_url")) {
                     return link.getHref();

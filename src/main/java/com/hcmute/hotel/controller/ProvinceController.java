@@ -66,7 +66,7 @@ public class ProvinceController {
 
     @PostMapping("")
     @ApiOperation("Create")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> addProvince(@RequestBody @Valid AddNewProvinceRequest addNewProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest) throws Exception {
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null, result);
@@ -185,7 +185,7 @@ public class ProvinceController {
     @DeleteMapping("/image/{provinceid}")
     @ApiOperation("Delete")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> deleteImage(@PathVariable("provinceId") String id)
+    public ResponseEntity<Object> deleteImage(@PathVariable("provinceid") String id)
     {
         ProvinceEntity province =  provinceService.getProvinceById(id);
         if (province==null)
