@@ -1,6 +1,7 @@
 package com.hcmute.hotel.service;
 
 import com.hcmute.hotel.model.entity.BookingEntity;
+import com.hcmute.hotel.model.entity.UserEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -17,4 +18,6 @@ public interface BookingService {
     BookingEntity findBookingById(String id);
     boolean checkUserDateValidate(String userId,LocalDateTime checkinDate,LocalDateTime checkoutDate);
     List<BookingEntity> getUserBooking(String userId);
+
+    List<BookingEntity> getBookingByOwner(UserEntity userId);
 }
