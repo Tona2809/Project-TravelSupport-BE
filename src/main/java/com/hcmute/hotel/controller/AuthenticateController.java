@@ -71,7 +71,7 @@ public class AuthenticateController {
         }
 
         try {
-            user.setEnabled(true);
+            user.setEnabled(false);
             user.setVerificationCode(RandomString.make(64));
             user = userService.register(user, AppUserRole.ROLE_USER);
             if (user == null) {

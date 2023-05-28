@@ -1,5 +1,9 @@
 package com.hcmute.hotel.controller;
 
+import com.hcmute.hotel.common.BookingStatusEnum;
+import com.hcmute.hotel.common.OrderByEnum;
+import com.hcmute.hotel.common.StaySortEnum;
+import com.hcmute.hotel.common.StayStatus;
 import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.model.entity.BookingEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
@@ -17,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -150,6 +155,78 @@ public class BookingController {
             List<BookingEntity> list = bookingService.getUserBooking(user.getId());
             Map<String, Object> map = new HashMap<>();
             map.put("content", list);
+            return new ResponseEntity<>(map, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+    @GetMapping("/Owner")
+    @ApiOperation("Get Booking by Owner")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Object> searchOwnerBooking(HttpServletRequest req)
+    {
+        UserEntity user;
+        try
+        {
+            user=authenticateHandler.authenticateUser(req);
+            List<BookingEntity> list = bookingService.getBookingByOwner(user);
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", list);
+            return new ResponseEntity<>(map, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+    @GetMapping("/Owner/{bookingId}")
+    @ApiOperation("Complete Booking")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Object> completeBooking(HttpServletRequest req,@PathVariable("bookingId") String bookingId)
+    {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            BookingEntity booking = bookingService.findBookingById(bookingId);
+            if (booking == null)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E404,"BOOKING_NOT_FOUND","Can't get booking with id provided"),HttpStatus.NOT_FOUND);
+            }
+            if (booking.getStay().getHost()!=user || booking.getCheckoutDate().compareTo(LocalDateTime.now())<0)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_REQUEST","You are not owner or date submit not valid"),HttpStatus.BAD_REQUEST);
+            }
+            booking.setStatus(2);
+            booking=bookingService.addBooking(booking);
+            return new ResponseEntity<>(booking,HttpStatus.OK);
+        }catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+    @GetMapping("/getTotalEarn")
+    @ApiOperation("Get Owner Earning")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Object> searchOwnerStatic(HttpServletRequest req)
+    {
+        UserEntity user;
+        try
+        {
+            int totalBooking=0,totalComplete=0,totalEarning=0;
+            user=authenticateHandler.authenticateUser(req);
+            List<BookingEntity> list = bookingService.getBookingByOwner(user);
+            for (BookingEntity booking : list)
+            {
+                if (booking.getStatus()==2)
+                {
+                    totalBooking+=1;
+                    totalComplete+=1;
+                    totalEarning+=booking.getTotalPrice();
+                }
+            }
+            Map<String, Object> map = new HashMap<>();
+            map.put("totalBooking", list.size());
+            map.put("totalComplete", totalComplete);
+            map.put("totalEarning",totalEarning);
+            map.put("Host",user);
+
             return new ResponseEntity<>(map, HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);

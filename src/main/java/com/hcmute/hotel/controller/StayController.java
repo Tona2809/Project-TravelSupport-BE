@@ -18,10 +18,7 @@ import com.hcmute.hotel.model.payload.request.Stay.UpdateStayRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.PagingResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
-import com.hcmute.hotel.service.AmenitiesService;
-import com.hcmute.hotel.service.ProvinceService;
-import com.hcmute.hotel.service.StayService;
-import com.hcmute.hotel.service.UserService;
+import com.hcmute.hotel.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +54,7 @@ import java.util.*;
 public class StayController {
     @Autowired
     AuthenticateHandler authenticateHandler;
+    private final BookingService bookingService;
     private final StayService stayService;
     private final AmenitiesService amenitiesService;
     private final UserService userService;
@@ -181,6 +179,11 @@ public class StayController {
                 for (UserEntity tempUser : stay.getUserLiked())
                 {
                     tempUser.getStayLiked().remove(stay);
+                }
+                for (BookingEntity booking : stay.getBooking())
+                {
+                    booking.setStatus(3);
+                    bookingService.addBooking(booking);
                 }
                 ProvinceEntity province = provinceService.getProvinceById(stay.getProvince().getId());
                 if (province!=null)
