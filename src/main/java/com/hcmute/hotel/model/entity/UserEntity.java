@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -62,14 +63,19 @@ public class UserEntity {
     @JoinTable(name = "\"user_role\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"role_id\""))
     private Set<RoleEntity> roles;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnore
+    @JoinTable(name = "\"user_voucher\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"voucher_id\""))
+    private Set<VoucherEntity> vouchers;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userReview")
     @JsonIgnore
-    private  Set<ReviewEntity> listReview;
+    private Set<ReviewEntity> listReview;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userRating")
     @JsonIgnore
-    private  Set<StayRatingEntity> listRating;
-    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER, mappedBy = "user",targetEntity = BookingEntity.class)
+    private Set<StayRatingEntity> listRating;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user", targetEntity = BookingEntity.class)
     @JsonIgnore
     private Set<BookingEntity> bookingEntities;
 
@@ -91,7 +97,7 @@ public class UserEntity {
 
     public UserEntity(String password, String email) {
         this.password = password;
-        this.email=email;
+        this.email = email;
     }
 
     public UserEntity(String fullName, String email, String password, String gender, String phone) {
@@ -102,7 +108,7 @@ public class UserEntity {
         this.phone = phone;
     }
 
-    @OneToMany(mappedBy = "host",targetEntity = StayEntity.class,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "host", targetEntity = StayEntity.class, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<StayEntity> stayOwner;
 
@@ -225,6 +231,14 @@ public class UserEntity {
 
     public void setListReview(Set<ReviewEntity> listReview) {
         this.listReview = listReview;
+    }
+
+    public Set<VoucherEntity> getVouchers() {
+        return vouchers;
+    }
+
+    public void setVouchers(Set<VoucherEntity> vouchers) {
+        this.vouchers = vouchers;
     }
 
     public UserEntity() {

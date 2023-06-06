@@ -87,6 +87,10 @@ public class StayEntity {
     @JsonIgnore
     private Set<BookingEntity> booking;
 
+    @OneToMany(mappedBy = "stay",targetEntity = VoucherEntity.class,cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<VoucherEntity> voucher;
+
     public Set<BookingEntity> getBooking() {
         return booking;
     }
@@ -281,6 +285,14 @@ public class StayEntity {
 
     public void setLatestUpdateAt(LocalDateTime latestUpdateAt) {
         this.latestUpdateAt = latestUpdateAt;
+    }
+
+    public Set<VoucherEntity> getVoucher() {
+        return voucher;
+    }
+
+    public void setVoucher(Set<VoucherEntity> voucher) {
+        this.voucher = voucher;
     }
 
     public StayEntity() {

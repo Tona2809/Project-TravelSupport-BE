@@ -16,7 +16,7 @@ public class AddNewStayRequest {
     final String EMPTY_MESSAGE ="cannot be empty";
     @NotEmpty(message = "name"+EMPTY_MESSAGE)
     String name;
-    @NotNull(message = "province id"+EMPTY_MESSAGE)
+    @NotEmpty(message = "province id"+EMPTY_MESSAGE)
     String provinceId;
     @NotEmpty(message = "address description" + EMPTY_MESSAGE)
     String addressDescription;
