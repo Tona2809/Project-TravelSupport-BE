@@ -15,4 +15,7 @@ public interface VoucherRepository extends JpaRepository<VoucherEntity, String> 
     List<VoucherEntity> findByName(String name);
     @Query(value = "select * from voucher where name like %?%  and id <> ?", nativeQuery = true)
     List<VoucherEntity> findByNameAndId(String name, String id);
+
+    @Query(value ="select * from voucher where stay_id = ?",nativeQuery = true)
+    List<VoucherEntity> getAllVoucherByStay(String stayId);
 }

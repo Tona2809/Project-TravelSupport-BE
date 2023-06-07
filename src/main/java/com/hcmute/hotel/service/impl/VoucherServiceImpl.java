@@ -17,13 +17,19 @@ import java.util.Optional;
 public class VoucherServiceImpl implements VoucherService {
     private final VoucherRepository voucherRepository;
     @Override
-    public VoucherEntity addAmenities(VoucherEntity entity) {
+    public VoucherEntity addVoucher(VoucherEntity entity) {
         return voucherRepository.save(entity);
     }
 
     @Override
     public List<VoucherEntity> getAllVouchers() {
         List<VoucherEntity> voucherEntityList = voucherRepository.findAll();
+        return voucherEntityList;
+    }
+
+    @Override
+    public List<VoucherEntity> getAllVouchersByStay(String stayid) {
+        List<VoucherEntity> voucherEntityList = voucherRepository.getAllVoucherByStay(stayid);
         return voucherEntityList;
     }
 

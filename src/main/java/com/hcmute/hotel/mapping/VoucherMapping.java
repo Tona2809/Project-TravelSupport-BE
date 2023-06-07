@@ -22,16 +22,14 @@ public class VoucherMapping {
         voucherEntity.setUpdateAt(LocalDateTime.now(ZoneId.of("GMT+07:00")));
         voucherEntity.setHidden(false);
         voucherEntity.setExpirationDate(addNewVocuherRequest.getExpiredDate());
-        voucherEntity.setRemainingQuantity(addNewVocuherRequest.getQuantity());
+        voucherEntity.setRemainingQuantity(0);
         voucherEntity.setQuantity(addNewVocuherRequest.getQuantity());
         return voucherEntity;
     }
     public static VoucherEntity updateVoucherToEntity(UpdateVoucherRequest updateVoucherRequest,VoucherEntity voucher) {
         voucher.setName(updateVoucherRequest.getName());
-        LocalDateTime time = LocalDateTime.now();
         voucher.setHidden(voucher.isHidden());
-        voucher.setUpdateAt(time);
-        voucher.setQuantity(updateVoucherRequest.getQuantity());
+        voucher.setUpdateAt(LocalDateTime.now(ZoneId.of("GMT+07:00")));
         voucher.setExpirationDate(updateVoucherRequest.getExpiredDate());
         return voucher;
     }

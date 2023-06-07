@@ -13,8 +13,9 @@ import java.util.List;
 @Service
 public interface VoucherService {
 
-    VoucherEntity addAmenities(VoucherEntity entity);
+    VoucherEntity addVoucher(VoucherEntity entity);
     List<VoucherEntity> getAllVouchers();
+    List<VoucherEntity> getAllVouchersByStay(String stayid);
 
     VoucherEntity getVoucherById(String id);
 

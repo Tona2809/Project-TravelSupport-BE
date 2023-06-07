@@ -59,7 +59,7 @@ public class VoucherController {
     @PostMapping("")
     @ApiOperation("Add")
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> addStay(HttpServletRequest req, @Valid @RequestBody AddVoucherRequest addNewVoucherRequest) {
+    public ResponseEntity<Object> addVoucher(HttpServletRequest req, @Valid @RequestBody AddVoucherRequest addNewVoucherRequest) {
         UserEntity user;
         try {
             user = authenticateHandler.authenticateUser(req);
@@ -70,7 +70,7 @@ public class VoucherController {
             } else {
                 voucher.setStay(stay);
             }
-            voucherService.addAmenities(voucher);
+            voucherService.addVoucher(voucher);
             return new ResponseEntity<>(voucher, HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
@@ -83,10 +83,28 @@ public class VoucherController {
         List<VoucherEntity> voucherEntityList = voucherService.getAllVouchers();
         return new DataResponse(voucherEntityList);
     }
+
+    @GetMapping("/stay/{id}")
+    @ApiOperation("Find vouchers by stay id")
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Object> getVouchersByStayId(@PathVariable String stayid) {
+        StayEntity stay = stayService.getStayById(stayid);
+        if(stay == null) {
+            MessageResponse messageResponse = new MessageResponse("Bad Request", "STAY_ID_NOT_FOUND", "Stay id not found");
+            return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
+        } else {
+            List<VoucherEntity> voucherEntityList = voucherService.getAllVouchersByStay(stayid);
+            if (voucherEntityList == null) {
+                MessageResponse messageResponse = new MessageResponse("Bad Request", "VOUCHER_CAN_NOT_FOUND", "Voucher can not found");
+                return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(voucherEntityList, HttpStatus.OK);
+        }
+    }
     @GetMapping("/{id}")
     @ApiOperation("Find by id")
     //@PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> getProvinceById(@PathVariable String id) {
+    public ResponseEntity<Object> getVoucherById(@PathVariable String id) {
         VoucherEntity voucherEntity = voucherService.getVoucherById(id);
         if (voucherEntity == null) {
             MessageResponse messageResponse = new MessageResponse("Bad Request", "VOUCHER_ID_NOT_FOUND", "Voucher id not found");
@@ -99,7 +117,7 @@ public class VoucherController {
     @PatchMapping("/{id}")
     @ApiOperation("Update")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> updateProvince(@Valid @RequestBody UpdateVoucherRequest updateVoucherRequest, BindingResult result, HttpServletRequest httpServletRequest, @PathVariable("id") String id) throws Exception {
+    public ResponseEntity<Object> updateVoucher(@Valid @RequestBody UpdateVoucherRequest updateVoucherRequest, BindingResult result, HttpServletRequest httpServletRequest, @PathVariable("id") String id) throws Exception {
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null, result);
         }
@@ -115,16 +133,37 @@ public class VoucherController {
                 MessageResponse messageResponse = new MessageResponse("Bad Request", "VOUCHER_ID_NOT_FOUND", "Voucher id not found");
                 return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
             }
-            boolean isExisted = voucherService.findByNameAndId(updateVoucherRequest.getName(), id);
-            if (!isExisted) {
+
                 voucher = VoucherMapping.updateVoucherToEntity(updateVoucherRequest,voucher);
-                voucher = voucherService.addAmenities(voucher);
+                if(updateVoucherRequest.getQuantity() < voucher.getRemainingQuantity()) {
+                    MessageResponse messageResponse = new MessageResponse("Bad Request", "QUANTITY_CAN_NOT_BE_SMALLER", "Quantity can not be smaller");
+                    return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);
+                }
+                voucher.setQuantity(updateVoucherRequest.getQuantity());
+                voucher = voucherService.addVoucher(voucher);
                 Map<String, Object> map = new HashMap<>();
                 map.put("content", voucher);
                 return new ResponseEntity<>(map, HttpStatus.OK);
-            } else {
-                MessageResponse messageResponse = new MessageResponse("Bad Request", "PROVINCE_NAME_EXISTED", "Province name has been used");
-                return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);
+        } else throw new BadCredentialsException("access token is missing");
+    }
+    @DeleteMapping("/{id}")
+    @ApiOperation("Delete")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Object> deleteVoucherById(@PathVariable("id") String id, HttpServletRequest httpServletRequest) {
+        String authorizationHeader = httpServletRequest.getHeader(AUTHORIZATION);
+        VoucherEntity voucher = voucherService.getVoucherById(id);
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String accessToken = authorizationHeader.substring("Bearer ".length());
+            if (jwtUtils.validateExpiredToken(accessToken) == true) {
+                throw new BadCredentialsException("access token is  expired");
+            }
+            if (voucher == null) {
+                MessageResponse messageResponse = new MessageResponse("Bad Request", "VOUCHER_ID_NOT_FOUND", "Voucher id not found");
+                return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
+            }
+            else {
+                voucherService.deleteById(id);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
         } else throw new BadCredentialsException("access token is missing");
     }
