@@ -1,6 +1,7 @@
 package com.hcmute.hotel.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -50,9 +51,10 @@ public class VoucherEntity {
     @JoinColumn(name = "\"stay_id\"")
     private StayEntity stay;
 
-//    @ManyToMany(mappedBy = "\"vouchers\"",targetEntity = UserEntity.class)
-//    Set<UserEntity> usersVouchers;
-
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnore
+    @JoinTable(name = "\"user_voucher\"", joinColumns = @JoinColumn(name = "\"voucher_id\""), inverseJoinColumns = @JoinColumn(name = "\"user_id\""))
+    private Set<UserEntity> users;
     @Column(name ="\"quantity\"")
     private int quantity;
 
@@ -123,13 +125,13 @@ public class VoucherEntity {
         this.stay = stay;
     }
 
-//    public Set<UserEntity> getUsersVouchers() {
-//        return usersVouchers;
-//    }
-//
-//    public void setUsersVouchers(Set<UserEntity> usersVouchers) {
-//        this.usersVouchers = usersVouchers;
-//    }
+    public Set<UserEntity> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<UserEntity> users) {
+        this.users = users;
+    }
 
     public int getQuantity() {
         return quantity;

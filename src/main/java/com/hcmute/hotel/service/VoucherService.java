@@ -2,6 +2,7 @@ package com.hcmute.hotel.service;
 
 import com.hcmute.hotel.model.entity.AmenitiesEntity;
 import com.hcmute.hotel.model.entity.ProvinceEntity;
+import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.entity.VoucherEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ public interface VoucherService {
     void deleteById(String id);
 
     boolean findByName(String name);
+
+    public VoucherEntity userVoucher(UserEntity user,VoucherEntity voucher);
 
     boolean findByNameAndId(String name, String id);
 }

@@ -27,7 +27,6 @@ public class VoucherMapping {
         return voucherEntity;
     }
     public static VoucherEntity updateVoucherToEntity(UpdateVoucherRequest updateVoucherRequest,VoucherEntity voucher) {
-        voucher.setName(updateVoucherRequest.getName());
         voucher.setHidden(voucher.isHidden());
         voucher.setUpdateAt(LocalDateTime.now(ZoneId.of("GMT+07:00")));
         voucher.setExpirationDate(updateVoucherRequest.getExpiredDate());

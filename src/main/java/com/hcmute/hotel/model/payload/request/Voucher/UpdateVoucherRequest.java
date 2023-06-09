@@ -13,9 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 public class UpdateVoucherRequest {
-    final String EMPTY_MESSAGE ="cannot be empty";
-    @NotEmpty(message = "name"+EMPTY_MESSAGE)
-    String name;
+
     LocalDateTime expiredDate;
     private boolean isHidden;
     private int quantity;

@@ -15,10 +15,12 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 public class AddNewBookingRequest {
-@NotEmpty(message = "Stay id can't be empty")
+    @NotEmpty(message = "Stay id can't be empty")
     private String stayId;
+    @NotEmpty(message = "Voucher id can't be emtpy")
+    private String voucherId;
     private LocalDateTime checkinDate;
     private LocalDateTime checkoutDate;
-@NotNull(message = "Total people can't be null")
+    @NotNull(message = "Total people can't be null")
     private int totalPeople;
 }

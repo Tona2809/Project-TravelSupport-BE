@@ -139,11 +139,17 @@ public class VoucherController {
                     MessageResponse messageResponse = new MessageResponse("Bad Request", "QUANTITY_CAN_NOT_BE_SMALLER", "Quantity can not be smaller");
                     return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);
                 }
-                voucher.setQuantity(updateVoucherRequest.getQuantity());
-                voucher = voucherService.addVoucher(voucher);
-                Map<String, Object> map = new HashMap<>();
-                map.put("content", voucher);
-                return new ResponseEntity<>(map, HttpStatus.OK);
+                if(updateVoucherRequest.getQuantity() >= voucher.getRemainingQuantity()) {
+                    voucher.setQuantity(updateVoucherRequest.getQuantity());
+                    voucher = voucherService.addVoucher(voucher);
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("content", voucher);
+                    return new ResponseEntity<>(map, HttpStatus.OK);
+                }
+                else {
+                    MessageResponse messageResponse = new MessageResponse("Bad Request", "VOUCHER_QUANTITY_NOT_VALID", "Voucher quantity can not be smaller remain quantity");
+                    return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
+                }
         } else throw new BadCredentialsException("access token is missing");
     }
     @DeleteMapping("/{id}")

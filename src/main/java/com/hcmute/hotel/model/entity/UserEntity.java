@@ -63,11 +63,6 @@ public class UserEntity {
     @JoinTable(name = "\"user_role\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"role_id\""))
     private Set<RoleEntity> roles;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JsonIgnore
-    @JoinTable(name = "\"user_voucher\"", joinColumns = @JoinColumn(name = "\"user_id\""), inverseJoinColumns = @JoinColumn(name = "\"voucher_id\""))
-    private Set<VoucherEntity> vouchers;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userReview")
     @JsonIgnore
     private Set<ReviewEntity> listReview;
@@ -233,13 +228,6 @@ public class UserEntity {
         this.listReview = listReview;
     }
 
-    public Set<VoucherEntity> getVouchers() {
-        return vouchers;
-    }
-
-    public void setVouchers(Set<VoucherEntity> vouchers) {
-        this.vouchers = vouchers;
-    }
 
     public UserEntity() {
     }
