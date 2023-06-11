@@ -364,6 +364,7 @@ public class StayController {
     @ApiOperation("Search")
     public ResponseEntity<Object> searchByCriteria(
             @RequestParam(required = false) String provinceId,
+            @RequestParam(required = false) String searchKey,
             @RequestParam(defaultValue = "0",name = "pageIndex") int page,
             @RequestParam(defaultValue = "5",name = "pageSize") int size,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -373,16 +374,20 @@ public class StayController {
             @RequestParam(defaultValue = "5") int maxPeople,
             @RequestParam(defaultValue = "1000") int maxPrice,
             @RequestParam(defaultValue = "0") int minPrice,
-            @RequestParam(required = false) String[] amenitiesId,
+            @RequestParam(required = false) List<String> amenitiesId,
             @RequestParam(defaultValue = "PRICE") StaySortEnum sort,
             @RequestParam(defaultValue = "DESCENDING") OrderByEnum order,
             @RequestParam(defaultValue = "NULL") StayStatus status,
             @RequestParam(required = false)boolean hidden)
     {
-        Page<StayEntity> stayPage = stayService.searchByCriteria(provinceId,minPrice,maxPrice,checkInDate,checkOutDate,status.getName(),hidden,maxPeople,page,size,sort.getName(),order.getName());
+        String isEmpty = null;
+        if (amenitiesId!=null)
+        {
+           isEmpty = "Not null";
+        }
+        Page<StayEntity> stayPage = stayService.searchByCriteria(provinceId,minPrice,maxPrice,checkInDate,checkOutDate,status.getName(),hidden,maxPeople,searchKey,page,size,sort.getName(),order.getName(),isEmpty,amenitiesId);
         List<StayEntity> listStay = stayPage.toList();
         PagingResponse pagingResponse = new PagingResponse();
-        Map<String,Object> map = new HashMap<>();
         List<Object> Result = Arrays.asList(listStay.toArray());
         pagingResponse.setTotalPages(stayPage.getTotalPages());
         pagingResponse.setEmpty(listStay.size()==0);

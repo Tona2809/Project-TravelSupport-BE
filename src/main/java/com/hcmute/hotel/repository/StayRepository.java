@@ -17,6 +17,6 @@ public interface StayRepository extends JpaRepository<StayEntity,String> {
     @Query(value = "Select * from stays where province=?1",nativeQuery = true)
     Page<StayEntity> findALlStayByProvinceId(String provinceId,Pageable pageable);
     List<StayEntity> findAllByProvince(ProvinceEntity province);
-    @Query(value = "Select * from stays  where (province=?1 or ?1 is null) and (price between ?2 and ?3) and (((?4 between time_open and time_close) or ?4 is null) and ((?5 between time_open and time_close) or ?5 is null)) and (max_people>=?6) and (status=?7) and (hidden=?8 or ?8 is null)",nativeQuery = true)
-    Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate, int maxPeople,String status,boolean hidden, String sort, String orderBy, Pageable paging);
+    @Query(value = "SELECT * FROM stays WHERE (province = ?1 OR ?1 IS NULL) AND (price BETWEEN ?2 AND ?3) AND (((?4 BETWEEN time_open AND time_close) OR ?4 IS NULL) AND ((?5 BETWEEN time_open AND time_close) OR ?5 IS NULL)) AND (max_people >= ?6) AND (status = ?7) AND (hidden = ?8 OR ?8 IS NULL) AND (CONCAT(name, ' ', address_description) LIKE CONCAT('%', COALESCE(?9, ''), '%')) AND (COALESCE((?10), NULL) IS NULL OR id IN (SELECT stay_id FROM stay_amenities WHERE amenities_id IN (?11) GROUP BY stay_id HAVING COUNT(DISTINCT amenities_id) = ?12))", nativeQuery = true)
+    Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate, int maxPeople, String status, boolean hidden, String searchKey,String isEmpty,List<String> amenitiesId,int amenitiesCount, String sort, String orderBy, Pageable paging);
 }

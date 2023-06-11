@@ -1,6 +1,7 @@
 package com.hcmute.hotel.repository;
 
 import com.hcmute.hotel.model.entity.BookingEntity;
+import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +20,5 @@ public interface BookingRepository extends JpaRepository<BookingEntity,String> {
     @Query(value = "Select * from bookings where user_id=?1 and status=1 order by create_at asc",nativeQuery = true)
     List<BookingEntity> getUserBooking(String userId);
     List<BookingEntity> getAllByStay_HostOrderByCheckinDateDesc(UserEntity user);
+    List<BookingEntity> getAllByStay(StayEntity stay);
 }

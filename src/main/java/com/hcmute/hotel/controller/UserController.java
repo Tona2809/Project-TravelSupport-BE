@@ -89,14 +89,16 @@ public class UserController {
 
     @PostMapping(value = "/userInfo", consumes = {"multipart/form-data"})
     @ApiOperation("Create User Info")
-    public ResponseEntity<Object> addUserInfo(@Valid AddUserInfoRequest addUserInfoRequest, @RequestParam String gender, @RequestPart MultipartFile file, HttpServletRequest req) {
+    public ResponseEntity<Object> addUserInfo(@Valid AddUserInfoRequest addUserInfoRequest, @RequestParam String gender, @RequestPart(required = false) MultipartFile file, HttpServletRequest req) {
         UserEntity user;
         try {
             user = authenticateHandler.authenticateUser(req);
             user.setFullName(addUserInfoRequest.getFullName());
             user.setPhone(addUserInfoRequest.getPhone());
             user.setGender(gender);
-            user = userService.addUserImage(file, user);
+            if (file!=null) {
+                user = userService.addUserImage(file, user);
+            }
             return new ResponseEntity<>(user, HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);

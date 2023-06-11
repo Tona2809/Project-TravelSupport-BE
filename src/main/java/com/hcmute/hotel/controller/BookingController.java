@@ -33,6 +33,7 @@ import javax.validation.Valid;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -232,4 +233,35 @@ public class BookingController {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
+    @GetMapping("/getBlockedDate/{stayId}")
+    @ApiOperation("Get Date unavailable")
+    public ResponseEntity<Object> getDateBlocked(@PathVariable("stayId") String stayId)
+    {
+        StayEntity stay = stayService.getStayById(stayId);
+        if (stay == null)
+        {
+            return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't get stay with id provided"),HttpStatus.NOT_FOUND);
+        }
+        List<BookingEntity> bookingEntities = bookingService.getBookingByStay(stay);
+        List<LocalDateTime> responseList = new ArrayList<>();
+        if (bookingEntities != null)
+        {
+            for (BookingEntity bookingEntity : bookingEntities) {
+                LocalDateTime checkin = bookingEntity.getCheckinDate();
+                LocalDateTime checkout = bookingEntity.getCheckoutDate();
+
+                // Exclude bookingEntity if checkoutDate is earlier than current LocalDateTime.now()
+                if (checkout.isBefore(LocalDateTime.now())) {
+                    continue;
+                }
+                LocalDateTime current = checkin;
+                while (current.isBefore(checkout)) {
+                    responseList.add(current);
+                    current = current.plusDays(1);
+                }
+            }
+        }
+        return new ResponseEntity<>(responseList,HttpStatus.OK);
+    }
+
 }
