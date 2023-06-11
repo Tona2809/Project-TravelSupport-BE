@@ -8,11 +8,13 @@ import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.model.entity.BookingEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
+import com.hcmute.hotel.model.entity.VoucherEntity;
 import com.hcmute.hotel.model.payload.request.Booking.AddNewBookingRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.service.BookingService;
 import com.hcmute.hotel.service.PaypalService;
 import com.hcmute.hotel.service.StayService;
+import com.hcmute.hotel.service.VoucherService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
@@ -50,6 +52,8 @@ public class BookingController {
     private final BookingService bookingService;
     private final StayService stayService;
     private final PaypalService paypalService;
+
+    private final VoucherService voucherService;
     public static final String SUCCESS_URL = "/api/booking/pay/success";
     public static final String CANCEL_URL = "/api/order/pay/cancel";
     @PostMapping("")
@@ -66,6 +70,7 @@ public class BookingController {
             {
                 return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND_OR_OWNER","Can't find Stay with id provided or you are stay owner"),HttpStatus.NOT_FOUND);
             }
+            VoucherEntity voucher = voucherService.getVoucherById(addNewBookingRequest.getVoucherId());
             booking.setCreateAt(LocalDateTime.now());
             booking.setUser(user);
             booking.setStay(stay);
@@ -89,11 +94,26 @@ public class BookingController {
             {
                 return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_USER_CHECKIN_CHECKOUT_DATE","Invalid user checkin or checkout date"),HttpStatus.NOT_FOUND);
             }
+
             booking.setCheckinDate(addNewBookingRequest.getCheckinDate());
             booking.setCheckoutDate(addNewBookingRequest.getCheckoutDate());
             Duration duration = Duration.between(addNewBookingRequest.getCheckinDate(),addNewBookingRequest.getCheckoutDate());
             int diff = (int) Math.abs(duration.toDays());
-            int totalPrice=(diff+1)*stay.getPrice();
+            int totalPrice;
+            if(voucher == null) {
+             totalPrice =(diff+1)*stay.getPrice();
+            } else {
+                if(voucher.getQuantity() > 0) {
+                    totalPrice = (diff + 1) * stay.getPrice() * (1 - (voucher.getDiscount() / 100));
+                    voucher = voucherService.userVoucher(user, voucher);
+                    voucher.setQuantity(voucher.getQuantity() - 1);
+                    voucher.setRemainingQuantity(voucher.getRemainingQuantity() + 1);
+                    voucherService.addVoucher(voucher);
+                }
+                else {
+                    return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_QUANTITY","Invalid Quantity must be more than 0"),HttpStatus.BAD_REQUEST);
+                }
+            }
             booking.setTotalPrice(totalPrice);
             booking.setTotalPeople(addNewBookingRequest.getTotalPeople());
             booking.setCreateAt(LocalDateTime.now());
