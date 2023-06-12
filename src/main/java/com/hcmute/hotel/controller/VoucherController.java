@@ -84,10 +84,9 @@ public class VoucherController {
         return new DataResponse(voucherEntityList);
     }
 
-    @GetMapping("/stay/{id}")
+    @GetMapping("/stay/{stayid}")
     @ApiOperation("Find vouchers by stay id")
-    //@PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> getVouchersByStayId(@PathVariable String stayid) {
+    public ResponseEntity<Object> getVouchersByStayId(@PathVariable("stayid") String stayid) {
         StayEntity stay = stayService.getStayById(stayid);
         if(stay == null) {
             MessageResponse messageResponse = new MessageResponse("Bad Request", "STAY_ID_NOT_FOUND", "Stay id not found");
@@ -172,6 +171,27 @@ public class VoucherController {
                 return new ResponseEntity<>(HttpStatus.OK);
             }
         } else throw new BadCredentialsException("access token is missing");
+    }
+    @GetMapping("/userstay/{stayid}")
+    @ApiOperation("Get Voucher by user and stay id")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Object> getVoucherByUser(HttpServletRequest req,@PathVariable("stayid") String stayid)
+    {
+        UserEntity user;
+        StayEntity stay = stayService.getStayById(stayid);
+        if(stay == null) {
+            return new ResponseEntity<>(new ErrorResponse(E404, "STAY_NOT_FOUND", "Can't find stay"), HttpStatus.NOT_FOUND);
+        }
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            List<VoucherEntity> voucher = voucherService.getAllVoucherByUser(user, stay);
+            if (voucher == null) {
+                return new ResponseEntity<>(new ErrorResponse(E404, "VOUCHERS_NOT_FOUND", "Can't find vouchers with this user"), HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(voucher,HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
     }
 }
 

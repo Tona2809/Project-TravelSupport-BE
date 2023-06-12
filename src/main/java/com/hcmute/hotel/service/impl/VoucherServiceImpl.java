@@ -1,6 +1,7 @@
 package com.hcmute.hotel.service.impl;
 
 import com.hcmute.hotel.model.entity.ProvinceEntity;
+import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.entity.VoucherEntity;
 import com.hcmute.hotel.repository.UserRepository;
@@ -73,5 +74,11 @@ public class VoucherServiceImpl implements VoucherService {
         if (voucherEntityList.size() == 0)
             return false;
         else return true;
+    }
+
+    @Override
+    public List<VoucherEntity> getAllVoucherByUser(UserEntity user, StayEntity stay) {
+        List<VoucherEntity> voucherEntityList = voucherRepository.getAllVoucherByUser(user.getId(), stay.getId());
+        return voucherEntityList;
     }
 }

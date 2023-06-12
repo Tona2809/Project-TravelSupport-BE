@@ -1,9 +1,6 @@
 package com.hcmute.hotel.service;
 
-import com.hcmute.hotel.model.entity.AmenitiesEntity;
-import com.hcmute.hotel.model.entity.ProvinceEntity;
-import com.hcmute.hotel.model.entity.UserEntity;
-import com.hcmute.hotel.model.entity.VoucherEntity;
+import com.hcmute.hotel.model.entity.*;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,4 +24,6 @@ public interface VoucherService {
     public VoucherEntity userVoucher(UserEntity user,VoucherEntity voucher);
 
     boolean findByNameAndId(String name, String id);
+
+    List<VoucherEntity> getAllVoucherByUser(UserEntity user, StayEntity stay);
 }
