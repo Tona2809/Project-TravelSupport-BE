@@ -16,8 +16,7 @@ import java.time.LocalDateTime;
 @Getter
 public class AddNewBookingRequest {
     @NotEmpty(message = "Stay id can't be empty")
-    private String stayId;
-    @NotEmpty(message = "Voucher id can't be emtpy")
+    private String roomId;
     private String voucherId;
     private LocalDateTime checkinDate;
     private LocalDateTime checkoutDate;

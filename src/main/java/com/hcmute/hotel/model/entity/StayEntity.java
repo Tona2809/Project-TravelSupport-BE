@@ -45,8 +45,6 @@ public class StayEntity {
     private UserEntity host;
     @Column(name ="\"max_people\"")
     private int maxPeople;
-    @Column(name = "\"price\"")
-    private int price;
     @Column(name = "\"room_number\"")
     private int roomNumber;
     @Column(name = "\"bath_number\"")
@@ -83,20 +81,21 @@ public class StayEntity {
     @OneToMany(mappedBy = "stay",targetEntity = StayImageEntity.class,cascade = CascadeType.ALL)
     private Set<StayImageEntity> stayImage;
 
-    @OneToMany(mappedBy = "stay",targetEntity = BookingEntity.class,cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<BookingEntity> booking;
+    @OneToMany(mappedBy = "stay",targetEntity = RoomEntity.class,cascade = CascadeType.ALL)
+    private Set<RoomEntity> room;
 
     @OneToMany(mappedBy = "stay",targetEntity = VoucherEntity.class,cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<VoucherEntity> voucher;
 
-    public Set<BookingEntity> getBooking() {
-        return booking;
+
+
+    public Set<RoomEntity> getRoom() {
+        return room;
     }
 
-    public void setBooking(Set<BookingEntity> booking) {
-        this.booking = booking;
+    public void setRoom(Set<RoomEntity> room) {
+        this.room = room;
     }
 
     public Set<StayImageEntity> getStayImage() {
@@ -221,14 +220,6 @@ public class StayEntity {
 
     public void setMaxPeople(int maxPeople) {
         this.maxPeople = maxPeople;
-    }
-
-    public int getPrice() {
-        return price;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
     }
 
     public int getRoomNumber() {

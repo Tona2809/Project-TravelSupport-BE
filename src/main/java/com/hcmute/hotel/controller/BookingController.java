@@ -5,16 +5,10 @@ import com.hcmute.hotel.common.OrderByEnum;
 import com.hcmute.hotel.common.StaySortEnum;
 import com.hcmute.hotel.common.StayStatus;
 import com.hcmute.hotel.handler.AuthenticateHandler;
-import com.hcmute.hotel.model.entity.BookingEntity;
-import com.hcmute.hotel.model.entity.StayEntity;
-import com.hcmute.hotel.model.entity.UserEntity;
-import com.hcmute.hotel.model.entity.VoucherEntity;
+import com.hcmute.hotel.model.entity.*;
 import com.hcmute.hotel.model.payload.request.Booking.AddNewBookingRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
-import com.hcmute.hotel.service.BookingService;
-import com.hcmute.hotel.service.PaypalService;
-import com.hcmute.hotel.service.StayService;
-import com.hcmute.hotel.service.VoucherService;
+import com.hcmute.hotel.service.*;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
@@ -33,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -50,7 +45,10 @@ public class BookingController {
     @Autowired
     AuthenticateHandler authenticateHandler;
     private final BookingService bookingService;
+    private final VnpayService vnpayService;
     private final StayService stayService;
+
+    private final RoomService roomService;
     private final PaypalService paypalService;
 
     private final VoucherService voucherService;
@@ -65,28 +63,28 @@ public class BookingController {
         try {
             user = authenticateHandler.authenticateUser(req);
             BookingEntity booking = new BookingEntity();
-            StayEntity stay = stayService.getStayById(addNewBookingRequest.getStayId());
-            if (stay==null||user==stay.getHost())
+            RoomEntity room = roomService.findRoomById(addNewBookingRequest.getRoomId());
+            if (room==null)
             {
                 return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND_OR_OWNER","Can't find Stay with id provided or you are stay owner"),HttpStatus.NOT_FOUND);
             }
             VoucherEntity voucher = voucherService.getVoucherById(addNewBookingRequest.getVoucherId());
             booking.setCreateAt(LocalDateTime.now());
             booking.setUser(user);
-            booking.setStay(stay);
+            booking.setRoom(room);
             LocalDateTime checkinDate=addNewBookingRequest.getCheckinDate();
             LocalDateTime checkoutDate=addNewBookingRequest.getCheckoutDate();
 
-            if (checkinDate.compareTo(checkoutDate)>0 || checkinDate.compareTo(stay.getTimeOpen())<0 || checkinDate.compareTo(stay.getTimeClose())>0||checkoutDate.compareTo(stay.getTimeOpen())<0 || checkoutDate.compareTo(stay.getTimeClose())>0)
+            if (checkinDate.compareTo(checkoutDate)>0 || checkinDate.compareTo(room.getStay().getTimeOpen())<0 || checkinDate.compareTo(room.getStay().getTimeClose())>0||checkoutDate.compareTo(room.getStay().getTimeOpen())<0 || checkoutDate.compareTo(room.getStay().getTimeClose())>0)
             {
                 return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_CHECKIN_CHECKOUT_DATE","Invalid checkin or checkout date"),HttpStatus.NOT_FOUND);
             }
-            if (!bookingService.checkinValidate(stay.getId(), addNewBookingRequest.getCheckinDate()))
+            if (!bookingService.checkinValidate(room.getStay().getId(), addNewBookingRequest.getCheckinDate()))
             {
                 return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_CHECKIN_DATE","Invalid checkin date"),HttpStatus.BAD_REQUEST);
 
             }
-            if (!bookingService.checkoutValidate(stay.getId(),addNewBookingRequest.getCheckinDate(),addNewBookingRequest.getCheckoutDate()))
+            if (!bookingService.checkoutValidate(room.getStay().getId(),addNewBookingRequest.getCheckinDate(),addNewBookingRequest.getCheckoutDate()))
             {
                 return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_CHECKOUT_DATE","Invalid checkout date"),HttpStatus.BAD_REQUEST);
             }
@@ -101,10 +99,10 @@ public class BookingController {
             int diff = (int) Math.abs(duration.toDays());
             int totalPrice;
             if(voucher == null) {
-             totalPrice =(diff+1)*stay.getPrice();
+             totalPrice =(diff+1)*room.getPrice();
             } else {
                 if(voucher.getRemainingQuantity() < voucher.getQuantity()) {
-                    totalPrice = (diff + 1) * stay.getPrice() * (1 - (voucher.getDiscount() / 100));
+                    totalPrice = (diff + 1) * room.getPrice() * (1 - (voucher.getDiscount() / 100));
                     voucher = voucherService.userVoucher(user, voucher);
                     voucher.setRemainingQuantity(voucher.getRemainingQuantity() + 1);
                     voucherService.addVoucher(voucher);
@@ -117,11 +115,13 @@ public class BookingController {
             booking.setTotalPeople(addNewBookingRequest.getTotalPeople());
             booking.setCreateAt(LocalDateTime.now());
             booking.setStatus(0);
-            booking=bookingService.addBooking(booking);
-            String link= paypalPayment(booking,req);
+//            booking=bookingService.addBooking(booking);
+            String link= vnpayService.createPayment(booking, req);
             return new ResponseEntity<>(link,HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        } catch (UnsupportedEncodingException e) {
+            return new ResponseEntity<>(new ErrorResponse(E400, "ERROR", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
     private String paypalPayment(BookingEntity booking,HttpServletRequest req)
@@ -199,7 +199,7 @@ public class BookingController {
     }
     @GetMapping("/Owner/{bookingId}")
     @ApiOperation("Complete Booking")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> completeBooking(HttpServletRequest req,@PathVariable("bookingId") String bookingId)
     {
         UserEntity user;
@@ -209,10 +209,6 @@ public class BookingController {
             if (booking == null)
             {
                 return new ResponseEntity<>(new ErrorResponse(E404,"BOOKING_NOT_FOUND","Can't get booking with id provided"),HttpStatus.NOT_FOUND);
-            }
-            if (booking.getStay().getHost()!=user || booking.getCheckoutDate().compareTo(LocalDateTime.now())<0)
-            {
-                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_REQUEST","You are not owner or date submit not valid"),HttpStatus.BAD_REQUEST);
             }
             booking.setStatus(2);
             booking=bookingService.addBooking(booking);
@@ -252,16 +248,16 @@ public class BookingController {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
-    @GetMapping("/getBlockedDate/{stayId}")
+    @GetMapping("/getBlockedDate/{roomId}")
     @ApiOperation("Get Date unavailable")
-    public ResponseEntity<Object> getDateBlocked(@PathVariable("stayId") String stayId)
+    public ResponseEntity<Object> getDateBlocked(@PathVariable("roomId") String roomId)
     {
-        StayEntity stay = stayService.getStayById(stayId);
-        if (stay == null)
+        RoomEntity room = roomService.findRoomById(roomId);
+        if (room == null)
         {
-            return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't get stay with id provided"),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ErrorResponse(E404,"ROOM_NOT_FOUND","Can't get room with id provided"),HttpStatus.NOT_FOUND);
         }
-        List<BookingEntity> bookingEntities = bookingService.getBookingByStay(stay);
+        List<BookingEntity> bookingEntities = bookingService.getBookingByRoom(room);
         List<LocalDateTime> responseList = new ArrayList<>();
         if (bookingEntities != null)
         {

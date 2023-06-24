@@ -1,6 +1,7 @@
 package com.hcmute.hotel.service.impl;
 
 import com.hcmute.hotel.model.entity.BookingEntity;
+import com.hcmute.hotel.model.entity.RoomEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.repository.BookingRepository;
@@ -56,14 +57,20 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingEntity> getBookingByStay(StayEntity stay) {
+    public List<BookingEntity> getBookingByStay(String stay) {
         List<BookingEntity> list = bookingRepository.getAllByStay(stay);
         return list;
     }
 
     @Override
+    public List<BookingEntity> getBookingByRoom(RoomEntity room) {
+        List<BookingEntity> list = bookingRepository.getAllByRoom(room);
+        return list;
+    }
+
+    @Override
     public List<BookingEntity> getBookingByOwner(UserEntity userId) {
-        List<BookingEntity> list = bookingRepository.getAllByStay_HostOrderByCheckinDateDesc(userId);
+        List<BookingEntity> list = bookingRepository.getAllByRoom_Stay_HostOrderByCheckinDateDesc(userId);
         return list;
     }
 }

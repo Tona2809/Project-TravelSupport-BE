@@ -162,43 +162,43 @@ public class StayController {
 
         }
     }
-    @DeleteMapping("/{id}")
-    @ApiOperation("Delete")
-    @PreAuthorize("hasRole('ROLE_OWNER')")
-    public ResponseEntity<Object> deleteStay(@PathVariable("id") String id,HttpServletRequest req) {
-        UserEntity user;
-        try {
-            user = authenticateHandler.authenticateUser(req);
-            StayEntity stay = stayService.getStayById(id);
-            if (stay == null) {
-                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);
-            }
-            if (user != stay.getHost()) {
-                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_STAY_OWNER","You are not stay owner"),HttpStatus.BAD_REQUEST);
-            } else {
-                for (UserEntity tempUser : stay.getUserLiked())
-                {
-                    tempUser.getStayLiked().remove(stay);
-                }
-                for (BookingEntity booking : stay.getBooking())
-                {
-                    booking.setStatus(3);
-                    bookingService.addBooking(booking);
-                }
-                ProvinceEntity province = provinceService.getProvinceById(stay.getProvince().getId());
-                if (province!=null)
-                province.getStay().remove(province);
-                province.setPlaceCount(province.getPlaceCount()-1);
-                province.getStay().remove(stay);
-                stayService.deleteStay(id);
-                provinceService.saveProvince(province);
-                return new ResponseEntity<>( HttpStatus.OK);
-            }
-        } catch (BadCredentialsException e) {
-                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
-
-        }
-    }
+//    @DeleteMapping("/{id}")
+//    @ApiOperation("Delete")
+//    @PreAuthorize("hasRole('ROLE_OWNER')")
+//    public ResponseEntity<Object> deleteStay(@PathVariable("id") String id,HttpServletRequest req) {
+//        UserEntity user;
+//        try {
+//            user = authenticateHandler.authenticateUser(req);
+//            StayEntity stay = stayService.getStayById(id);
+//            if (stay == null) {
+//                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);
+//            }
+//            if (user != stay.getHost()) {
+//                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_STAY_OWNER","You are not stay owner"),HttpStatus.BAD_REQUEST);
+//            } else {
+//                for (UserEntity tempUser : stay.getUserLiked())
+//                {
+//                    tempUser.getStayLiked().remove(stay);
+//                }
+//                for (BookingEntity booking : stay.getBooking())
+//                {
+//                    booking.setStatus(3);
+//                    bookingService.addBooking(booking);
+//                }
+//                ProvinceEntity province = provinceService.getProvinceById(stay.getProvince().getId());
+//                if (province!=null)
+//                province.getStay().remove(province);
+//                province.setPlaceCount(province.getPlaceCount()-1);
+//                province.getStay().remove(stay);
+//                stayService.deleteStay(id);
+//                provinceService.saveProvince(province);
+//                return new ResponseEntity<>( HttpStatus.OK);
+//            }
+//        } catch (BadCredentialsException e) {
+//                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+//
+//        }
+//    }
     @PostMapping("/stayAmenities/{id}")
     @ApiOperation("Add")
     @PreAuthorize("hasRole('ROLE_OWNER')")

@@ -1,6 +1,7 @@
 package com.hcmute.hotel.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -22,9 +23,6 @@ public class BookingEntity {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     private String id;
-    @ManyToOne()
-    @JoinColumn(name = "\"stay_id\"")
-    private StayEntity stay;
     @Column(name = "\"checkin_date\"")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
     @ApiModelProperty(required = true, example = "2021-08-20T00:00:00")
@@ -41,6 +39,10 @@ public class BookingEntity {
     @JoinColumn(name = "\"user_id\"")
     private UserEntity user;
 
+    @ManyToOne()
+    @JsonIgnore
+    @JoinColumn(name = "\"room_id\"")
+    private RoomEntity room;
 
     @Column(name = "\"total_price\"")
     private int totalPrice;
@@ -75,12 +77,12 @@ public class BookingEntity {
         this.id = id;
     }
 
-    public StayEntity getStay() {
-        return stay;
+    public RoomEntity getRoom() {
+        return room;
     }
 
-    public void setStay(StayEntity stay) {
-        this.stay = stay;
+    public void setRoom(RoomEntity room) {
+        this.room = room;
     }
 
     public LocalDateTime getCheckinDate() {

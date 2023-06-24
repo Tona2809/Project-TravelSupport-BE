@@ -28,9 +28,6 @@ public class AddNewStayRequest {
     @NotNull(message = "max people"+EMPTY_MESSAGE)
     @Min(value = 1,message = "max people must greater than 1")
     int maxPeople;
-    @NotNull(message = "price"+EMPTY_MESSAGE)
-    @Min(value = 1,message = "price must greater than 1")
-    int price;
     @NotNull(message = "room number"+EMPTY_MESSAGE)
     @Min(value = 1,message = "number of room must greater than 1")
     int roomNumber;
