@@ -17,5 +17,9 @@ Optional<UserEntity> findByPhone(String phone);
 Optional<UserEntity> findByEmail(String email);
 @Query(value = "Select * from users where Verification_code=?1",nativeQuery = true)
 Optional<UserEntity> findByVerificationCode(String code);
-    List<UserEntity> search(String keyword, UserStatus userStatus, AppUserRole userRole, int page, int size);
+
+@Query(value = "Select * from users where CONCAT(email, ' ', full_name ,' ', phone) LIKE CONCAT('%', COALESCE(?1, ''), '%')", nativeQuery = true)
+List<UserEntity> searchUser(String searchKey);
+
+List<UserEntity> search(String keyword, UserStatus userStatus, AppUserRole userRole, int page, int size);
 }

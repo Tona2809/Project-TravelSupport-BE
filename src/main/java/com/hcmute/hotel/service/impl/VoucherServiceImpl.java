@@ -63,7 +63,7 @@ public class VoucherServiceImpl implements VoucherService {
     public VoucherEntity userVoucher(UserEntity user, VoucherEntity voucher) {
       Set<UserEntity> users = new HashSet<>();
       users.add(user);
-        voucher.setUsers(users);
+      voucher.setUsers(users);
       return voucherRepository.save(voucher);
     }
 

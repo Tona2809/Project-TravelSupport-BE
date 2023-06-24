@@ -14,9 +14,10 @@ public class UserMapping {
     }
     public static UserEntity registerOwnerToEntity(UserEntity user,AddNewOwnerRequest registerRequest) {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setFullName(registerRequest.getFullname());
+        user.setFullName(registerRequest.getFullName());
         user.setPhone(registerRequest.getPhone());
         user.setGender(registerRequest.getGender());
+        user.setEmail(registerRequest.getEmail());
         registerRequest.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setPassword(registerRequest.getPassword());
         return user;

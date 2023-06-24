@@ -50,6 +50,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserEntity> searchKey(String keyWord) {
+        List<UserEntity> list = userRepository.searchUser(keyWord);
+        return list;
+    }
+
+    @Override
     public List<UserEntity> getAll() {
         List<UserEntity> list = userRepository.findAll();
         return list;

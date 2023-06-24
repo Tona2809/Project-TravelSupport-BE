@@ -55,26 +55,85 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendOwnerConfirmEmail(UserEntity user, String SiteURL) throws MessagingException, UnsupportedEncodingException {
-        String toAddress =user.getEmail();
+    public void sendOwnerConfirmEmail(String email) throws MessagingException, UnsupportedEncodingException {
+        String toAddress =email;
         String senderName="UTETravel";
-        String subject = "Please continue to complete your request";
+        String subject = "We have receive your request";
         String content = "Thank you for register as an owner at UTETravel,<br>"
-                + "Please click the link below to continue your registration:<br>"
-                + "<h3><a href=\"[[URL]]\" target=\"_self\">VERIFY</a></h3>"
-                + "Your verification code is:[[code]]<br>"
+                + "We will contact with you as soon as possible to get more information<br>"
                 + "Thank you,<br>"
                 + "UTETravel.";
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom("dilawabms900@gmail.com",senderName);
+        helper.setFrom("managementsitetrack@gmail.com",senderName);
         helper.setTo(toAddress);
         helper.setSubject(subject);
-        String verifyURL = SiteURL + "/api/authenticate/owner";
-        content = content.replace("[[URL]]", verifyURL);
-        content = content.replace("[[code]]", user.getVerificationCode());
         helper.setText(content, true);
         emailSender.send(message);
     }
+
+    @Override
+    public void sendOwnerRegistrationEmail(UserEntity user) throws MessagingException, UnsupportedEncodingException {
+        String toAddress =user.getEmail();
+        String senderName="UTETravel";
+        String subject = "Owner Account on UTETravel";
+        String content = "Thank you for your owner registration at UTETravel,<br>"
+                + "We kindly inform that you has been become an owner at UTETravel:<br>"
+                + "<h3>Your account info:</h3><br>"
+                + "Username:[[email]]"
+                + "Password:[[password]]"
+                + "Thank you,<br>"
+                + "UTETravel.";
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        helper.setFrom("managementsitetrack@gmail.com",senderName);
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+        content = content.replace("[[email]]", user.getEmail());
+        content = content.replace("[[password]]",user.getPassword());
+        helper.setText(content, true);
+        emailSender.send(message);
+    }
+
+    @Override
+    public void sendBlockedAccountEmail(UserEntity user, String reason) throws MessagingException, UnsupportedEncodingException {
+        String toAddress =user.getEmail();
+        String senderName="UTETravel";
+        String subject = "Your account is suspended on UTETravel";
+        String content = "Hi [[name]], your account is currently banned from UTETravel, because of the following reason:<br>"
+                + "<b>[[reason]]</b><br>"
+                + "Please feel free to contact admin via managementsitetrack@gmail.com if you think this is an misunderstood.<br>"
+                + "Thank you,<br>"
+                + "UTETravel.";
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        helper.setFrom("managementsitetrack@gmail.com",senderName);
+        content = content.replace("[[name]]", user.getFullName()==null ? "" : user.getFullName());
+        content = content.replace("[[reason]]", reason == null ? "" : reason);
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+        emailSender.send(message);
+    }
+
+    @Override
+    public void sendUnblockedAccountEmail(UserEntity user) throws MessagingException, UnsupportedEncodingException {
+        String toAddress =user.getEmail();
+        String senderName="UTETravel";
+        String subject = "Your account is no longer banned on UTETravel";
+        String content = "Hi [[name]], your account is no longer banned from UTETravel<br>"
+                + "We are sorry for the inconvenience. Thank you for being a part of UTETravel<br>"
+                + "Thank you,<br>"
+                + "UTETravel.";
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        helper.setFrom("managementsitetrack@gmail.com",senderName);
+        content = content.replace("[[name]]", user.getFullName()==null ? "" : user.getFullName());
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+        emailSender.send(message);
+    }
+
 
 }

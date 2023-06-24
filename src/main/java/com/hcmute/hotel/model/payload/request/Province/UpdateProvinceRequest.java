@@ -14,6 +14,5 @@ import javax.validation.constraints.NotEmpty;
 public class UpdateProvinceRequest {
     @NotEmpty(message = "Province name can not be empty")
     private String name;
-
     private boolean isHidden;
 }

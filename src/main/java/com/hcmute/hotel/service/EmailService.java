@@ -13,5 +13,12 @@ public interface EmailService {
     void sendSimpleMessage(String to,String subject,String text);
     void sendConfirmCustomerEmail(UserEntity user, String SiteURL)throws MessagingException, UnsupportedEncodingException;
 
-    void sendOwnerConfirmEmail(UserEntity user, String SiteURL)throws MessagingException, UnsupportedEncodingException;
+    void sendOwnerConfirmEmail(String email)throws MessagingException, UnsupportedEncodingException;
+
+    void sendOwnerRegistrationEmail(UserEntity user)throws MessagingException, UnsupportedEncodingException;
+
+    void sendBlockedAccountEmail(UserEntity user, String reason)throws MessagingException, UnsupportedEncodingException;
+
+    void sendUnblockedAccountEmail(UserEntity user)throws MessagingException, UnsupportedEncodingException;
+
 }

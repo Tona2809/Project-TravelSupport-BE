@@ -1,6 +1,7 @@
 package com.hcmute.hotel.controller;
 
 import com.hcmute.hotel.common.AppUserRole;
+import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.mapping.UserMapping;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.SuccessResponse;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,16 +36,19 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
+import static com.hcmute.hotel.controller.StayController.E400;
 
 @ComponentScan
 @RestController
@@ -84,28 +89,44 @@ public class AuthenticateController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PostMapping("/email/owner")
+    @ApiOperation("SendOwnerRegisterEmail")
+    public ResponseEntity<Object> sendOwnerRegisterEmail(@RequestParam String email) throws MessagingException, UnsupportedEncodingException {
+        UserEntity user = userService.findByEmail(email);
+        if (user!=null)
+        {
+            return new ResponseEntity<>(new ErrorResponse(E400, "EMAIL_IN_USED", "Email have been used"), HttpStatus.BAD_REQUEST);
+        }
+        try {
+            emailService.sendOwnerConfirmEmail(email);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PostMapping("/owner")
     @ApiOperation("Create Account Owner")
-    public ResponseEntity<Object> registerAccountOwner(@RequestBody @Valid AddNewOwnerRequest request, @RequestParam String verificationCode) {
-        UserEntity user = userService.findByVerificationCode(verificationCode);
-        if (user == null) {
-            return new ResponseEntity<>(new ErrorResponse(E404, "USER_HAVE_ALREADY_SIGN", "User have been fill the form"), HttpStatus.NOT_FOUND);
-
-        }
-        if (userService.findByPhone(request.getPhone()) != null) {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Object> registerAccountOwner(@RequestBody @Valid AddNewOwnerRequest request) {
+        UserEntity user = new UserEntity();
+        if (userService.findByEmail(request.getEmail()) != null) {
             return new ResponseEntity<>(new ErrorResponse(E400, "PHONE_NUMBER_EXISTS", "Phone number has been used"), HttpStatus.BAD_REQUEST);
         }
         user = UserMapping.registerOwnerToEntity(user, request);
         try {
             user.setVerificationCode(null);
+            user.setEnabled(true);
+            user.setStatus(true);
             user = userService.register(user, AppUserRole.ROLE_OWNER);
             if (user == null) {
                 return new ResponseEntity<>(new ErrorResponse(E404, "USER_NOT_CREATED", "Add user false"), HttpStatus.NOT_FOUND);
             }
+            emailService.sendOwnerRegistrationEmail(user);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseEntity<>(user.getPhone(), HttpStatus.OK);
+        return new ResponseEntity<>(user.getEmail(), HttpStatus.OK);
     }
 
     @PostMapping("/sendOwnerRegister")
@@ -120,7 +141,6 @@ public class AuthenticateController {
             user.setEmail(email);
             user.setVerificationCode(RandomString.make(64));
             user.setEnabled(false);
-            emailService.sendOwnerConfirmEmail(user, req.getHeader("origin"));
             userService.save(user);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
@@ -144,7 +164,10 @@ public class AuthenticateController {
         }
         if (!loginUser.isEnabled()) {
             return new ResponseEntity<>(new ErrorResponse(E400, "ACCOUNT_NOT_VERIFY", "Account not verify"), HttpStatus.BAD_REQUEST);
-
+        }
+        if (!loginUser.isStatus())
+        {
+            return new ResponseEntity<>(new ErrorResponse(E400, "ACCOUNT_BANNED","Account has been banned by admin"), HttpStatus.BAD_REQUEST);
         }
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginUser.getId().toString(), user.getPassword())

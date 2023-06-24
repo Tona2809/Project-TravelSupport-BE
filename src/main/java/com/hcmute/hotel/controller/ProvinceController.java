@@ -7,6 +7,7 @@ import com.hcmute.hotel.model.entity.ProvinceEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.payload.request.Province.AddNewProvinceRequest;
 import com.hcmute.hotel.model.payload.request.Province.UpdateProvinceRequest;
+import com.hcmute.hotel.model.payload.request.User.AddUserInfoRequest;
 import com.hcmute.hotel.model.payload.response.DataResponse;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.MessageResponse;
@@ -64,10 +65,10 @@ public class ProvinceController {
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
-    @PostMapping("")
+    @PostMapping(value = "",consumes = {"multipart/form-data"})
     @ApiOperation("Create")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> addProvince(@RequestBody @Valid AddNewProvinceRequest addNewProvinceRequest, BindingResult result, HttpServletRequest httpServletRequest) throws Exception {
+    public ResponseEntity<Object> addProvince(@RequestPart String name, BindingResult result, HttpServletRequest httpServletRequest, @RequestPart MultipartFile file) throws Exception {
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null, result);
         }
@@ -78,10 +79,12 @@ public class ProvinceController {
             if (jwtUtils.validateExpiredToken(accessToken) == true) {
                 throw new BadCredentialsException("access token is  expired");
             }
+            AddNewProvinceRequest addNewProvinceRequest = new AddNewProvinceRequest();
+            addNewProvinceRequest.setName(new String(name.getBytes("ISO-8859-1"), "UTF-8"));
             ProvinceEntity province = ProvinceMapping.addProvinceToEntity(addNewProvinceRequest);
             boolean isExisted = provinceService.findByName(addNewProvinceRequest.getName());
             if (isExisted == false) {
-                province = provinceService.saveProvince(province);
+                province=provinceService.addImage(file,province);
                 Map<String, Object> map = new HashMap<>();
                 map.put("content", province);
                 return new ResponseEntity<>(map, HttpStatus.OK);
@@ -145,11 +148,16 @@ public class ProvinceController {
                 return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
             }
             else {
-                for (StayEntity stay : province.getStay()) {
-                    stay.setProvince(null);
+                if (province.getStay().size()!=0)
+                {
+                    MessageResponse messageResponse = new MessageResponse("Bad Request", "PROVINCE_STAY_IS_NOT_EMPTY", "Province still have stays");
+                    return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);
                 }
-                provinceService.deleteById(id);
-                return new ResponseEntity<>(HttpStatus.OK);
+                else
+                {
+                    provinceService.deleteById(province.getId());
+                    return new ResponseEntity<>(HttpStatus.OK);
+                }
             }
         } else throw new BadCredentialsException("access token is missing");
     }
@@ -163,11 +171,6 @@ public class ProvinceController {
         {
             MessageResponse messageResponse = new MessageResponse("Bad request", "PROVINCE_ID_NOT_FOUND", "Province id not found");
             return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);
-        }
-        if (province.getImgLink()!=null)
-        {
-            MessageResponse messageResponse = new MessageResponse("Not found", "PROVINCE_ALREADY_HAVE_IMAGE", "Province already have image");
-            return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
         }
         try
         {
