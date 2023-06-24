@@ -103,15 +103,14 @@ public class BookingController {
             if(voucher == null) {
              totalPrice =(diff+1)*stay.getPrice();
             } else {
-                if(voucher.getQuantity() > 0) {
+                if(voucher.getRemainingQuantity() < voucher.getQuantity()) {
                     totalPrice = (diff + 1) * stay.getPrice() * (1 - (voucher.getDiscount() / 100));
                     voucher = voucherService.userVoucher(user, voucher);
-                    voucher.setQuantity(voucher.getQuantity() - 1);
                     voucher.setRemainingQuantity(voucher.getRemainingQuantity() + 1);
                     voucherService.addVoucher(voucher);
                 }
                 else {
-                    return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_QUANTITY","Invalid Quantity must be more than 0"),HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_REMAIN_QUANTITY","Invalid Remain quantity must be more than 0"),HttpStatus.BAD_REQUEST);
                 }
             }
             booking.setTotalPrice(totalPrice);
