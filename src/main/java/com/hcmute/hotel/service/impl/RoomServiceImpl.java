@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,6 +25,17 @@ public class RoomServiceImpl implements RoomService {
     public RoomEntity findRoomById(String id) {
         Optional<RoomEntity> room = roomRepository.findById(id);
         return room.isEmpty() ? null : room.get();
+    }
+
+    @Override
+    public List<RoomEntity> getAllRoomByStayID(String stayId) {
+      List<RoomEntity> roomEntityList = roomRepository.findAllByStayId(stayId);
+      return roomEntityList;
+    }
+
+    @Override
+    public void deleteById(String id) {
+        roomRepository.deleteById(id);
     }
 
 }

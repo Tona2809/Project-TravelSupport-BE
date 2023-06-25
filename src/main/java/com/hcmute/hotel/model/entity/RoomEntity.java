@@ -45,6 +45,9 @@ public class RoomEntity {
     @Column(name = "\"price\"")
     private int price;
 
+    @Column(name = "\"is_hidden\"")
+    private boolean isHidden;
+
     public String getId() {
         return id;
     }
@@ -93,4 +96,11 @@ public class RoomEntity {
         this.price = price;
     }
 
+    public boolean isHidden() {
+        return isHidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        isHidden = hidden;
+    }
 }
