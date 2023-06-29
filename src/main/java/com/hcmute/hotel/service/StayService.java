@@ -4,6 +4,7 @@ import com.hcmute.hotel.model.entity.ProvinceEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.StayImageEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
+import com.hcmute.hotel.model.payload.response.StaySearchResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -28,5 +29,9 @@ public interface StayService {
     List<StayEntity> pagingByProvince(String provinceId,int pageNo,int pageSize);
     List<StayEntity> findAllStayByProvince(ProvinceEntity province);
 
-    Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate,String status,boolean hidden, int maxPeople, String searchKey, int pageNo, int pageSize, String sort, String orderBy, String isEmpty, List<String> amenitiesId);
+    Page<StayEntity> searchByCriteria(String provinceId, int minPrice, int maxPrice, LocalDateTime checkinDate, LocalDateTime checkoutDate, String status, boolean hidden, int maxPeople, String searchKey, int pageNo, int pageSize, String sort, String orderBy, String isEmpty, List<String> amenitiesId);
+
+    StayImageEntity getImageByLink(String link);
+
+    void deleteImage(StayImageEntity image);
 }

@@ -8,6 +8,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @RestResource(exported = false)
@@ -39,17 +40,49 @@ public class BookingEntity {
     @JoinColumn(name = "\"user_id\"")
     private UserEntity user;
 
-    @ManyToOne()
-    @JsonIgnore
-    @JoinColumn(name = "\"room_id\"")
-    private RoomEntity room;
+    @OneToMany(mappedBy = "booking", targetEntity = BookingRoomEntity.class)
+    private Set<BookingRoomEntity> bookingRoom;
+
+    public Set<BookingRoomEntity> getBookingRoom() {
+        return bookingRoom;
+    }
+
+    public void setBookingRoom(Set<BookingRoomEntity> bookingRoom) {
+        this.bookingRoom = bookingRoom;
+    }
 
     @Column(name = "\"total_price\"")
     private int totalPrice;
     @Column(name = "\"total_people\"")
     private int totalPeople;
+
+    @Column(name = "\"total_room\"")
+    private int totalRoom;
     @Column(name = "\"status\"")
     private int status;
+
+    @ManyToOne()
+    @JoinColumn(name ="\"stay_id\"")
+    private StayEntity stay;
+
+    @Column(name = "\"payment_id\"")
+    private String paymentId;
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public StayEntity getStay() {
+        return stay;
+    }
+
+    public void setStay(StayEntity stay) {
+        this.stay = stay;
+    }
 
     public BookingEntity() {
     }
@@ -59,6 +92,14 @@ public class BookingEntity {
 
     public void setUser(UserEntity user) {
         this.user = user;
+    }
+
+    public int getTotalRoom() {
+        return totalRoom;
+    }
+
+    public void setTotalRoom(int totalRoom) {
+        this.totalRoom = totalRoom;
     }
 
     public int getStatus() {
@@ -75,14 +116,6 @@ public class BookingEntity {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public RoomEntity getRoom() {
-        return room;
-    }
-
-    public void setRoom(RoomEntity room) {
-        this.room = room;
     }
 
     public LocalDateTime getCheckinDate() {

@@ -16,7 +16,7 @@ public class VnpayService {
     @Autowired
     private VnpayConfig vnpayConfig;
 
-    public String createPayment(BookingEntity booking, HttpServletRequest req) throws UnsupportedEncodingException {
+    public Map<String,Object> createPayment(BookingEntity booking, HttpServletRequest req) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
 //        String orderType = req.getParameter("ordertype");
@@ -38,6 +38,7 @@ public class VnpayService {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_OrderType", orderType);
+        vnp_Params.put("vnp_ReturnUrl", vnpayConfig.vnp_returnUrl);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -75,6 +76,9 @@ public class VnpayService {
         String vnp_SecureHash = vnpayConfig.hmacSHA512(vnpayConfig.vnp_HashSecret, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = vnpayConfig.vnp_PayUrl + "?" + queryUrl;
-        return paymentUrl;
+        Map<String,Object> map = new HashMap<>();
+        map.put("link",paymentUrl);
+        map.put("paymentId",vnp_TxnRef);
+        return map;
     }
 }

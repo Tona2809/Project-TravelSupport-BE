@@ -9,14 +9,15 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @Setter
 @Getter
 public class AddNewBookingRequest {
-    @NotEmpty(message = "Stay id can't be empty")
-    private String roomId;
+    private String stayId;
+    private Map<String,Integer> roomList;
     private String voucherId;
     private LocalDateTime checkinDate;
     private LocalDateTime checkoutDate;

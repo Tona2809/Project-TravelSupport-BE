@@ -38,12 +38,24 @@ public class RoomEntity {
     @JoinColumn(name = "\"stay_id\"")
     private StayEntity stay;
 
-    @OneToMany(mappedBy = "room",targetEntity = BookingEntity.class,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "room", targetEntity = BookingRoomEntity.class,cascade = CascadeType.ALL)
     @JsonIgnore
-    private Set<BookingEntity> booking;
+    private Set<BookingRoomEntity> bookingRoom;
 
     @Column(name = "\"price\"")
     private int price;
+
+    @Column(name= "\"is_hidden\"")
+    private boolean isHidden;
+
+
+    public boolean isHidden() {
+        return isHidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        isHidden = hidden;
+    }
 
     public String getId() {
         return id;
@@ -51,6 +63,14 @@ public class RoomEntity {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Set<BookingRoomEntity> getBookingRoom() {
+        return bookingRoom;
+    }
+
+    public void setBookingRoom(Set<BookingRoomEntity> bookingRoom) {
+        this.bookingRoom = bookingRoom;
     }
 
     public String getRoomName() {

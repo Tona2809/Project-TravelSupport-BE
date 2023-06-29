@@ -43,16 +43,6 @@ public class StayEntity {
     @ManyToOne()
     @JoinColumn(name = "\"host\"")
     private UserEntity host;
-    @Column(name ="\"max_people\"")
-    private int maxPeople;
-    @Column(name = "\"room_number\"")
-    private int roomNumber;
-    @Column(name = "\"bath_number\"")
-    private int bathNumber;
-    @Column(name = "\"bedroom_number\"")
-    private int bedroomNumber;
-    @Column(name = "\"bed_number\"")
-    private int bedNumber;
     @Column(name = "\"status\"")
     private int status;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
@@ -73,6 +63,12 @@ public class StayEntity {
     @Column(name = "\"hidden\"")
     private boolean hidden;
 
+    @Column(name = "\"checkinTime\"")
+    private String checkinTime;
+
+    @Column(name = "\"checkoutTime\"")
+    private String checkoutTime;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "\"stay_amenities\"", joinColumns = @JoinColumn(name = "\"stay_id\""), inverseJoinColumns = @JoinColumn(name = "\"amenities_id\""))
     private Set<AmenitiesEntity> amenities;
@@ -84,11 +80,57 @@ public class StayEntity {
     @OneToMany(mappedBy = "stay",targetEntity = RoomEntity.class,cascade = CascadeType.ALL)
     private Set<RoomEntity> room;
 
+
     @OneToMany(mappedBy = "stay",targetEntity = VoucherEntity.class,cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<VoucherEntity> voucher;
 
+    @OneToMany(mappedBy = "stay",targetEntity = BookingEntity.class)
+    @JsonIgnore
+    private Set<BookingEntity> booking;
 
+    private int minPrice;
+
+    private int maxPeople;
+
+    public String getCheckinTime() {
+        return checkinTime;
+    }
+
+    public void setCheckinTime(String checkinTime) {
+        this.checkinTime = checkinTime;
+    }
+
+    public String getCheckoutTime() {
+        return checkoutTime;
+    }
+
+    public void setCheckoutTime(String checkoutTime) {
+        this.checkoutTime = checkoutTime;
+    }
+
+    public int getMinPrice() {
+        return minPrice;
+    }
+
+    public void setMinPrice(int minPrice) {
+        this.minPrice = minPrice;
+    }
+
+    public int getMaxPeople() {
+        return maxPeople;
+    }
+    public Set<BookingEntity> getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Set<BookingEntity> booking) {
+        this.booking = booking;
+    }
+
+    public void setMaxPeople(int maxPeople) {
+        this.maxPeople = maxPeople;
+    }
 
     public Set<RoomEntity> getRoom() {
         return room;
@@ -212,46 +254,6 @@ public class StayEntity {
 
     public void setHost(UserEntity host) {
         this.host = host;
-    }
-
-    public int getMaxPeople() {
-        return maxPeople;
-    }
-
-    public void setMaxPeople(int maxPeople) {
-        this.maxPeople = maxPeople;
-    }
-
-    public int getRoomNumber() {
-        return roomNumber;
-    }
-
-    public void setRoomNumber(int roomNumber) {
-        this.roomNumber = roomNumber;
-    }
-
-    public int getBathNumber() {
-        return bathNumber;
-    }
-
-    public void setBathNumber(int bathNumber) {
-        this.bathNumber = bathNumber;
-    }
-
-    public int getBedroomNumber() {
-        return bedroomNumber;
-    }
-
-    public void setBedroomNumber(int bedroomNumber) {
-        this.bedroomNumber = bedroomNumber;
-    }
-
-    public int getBedNumber() {
-        return bedNumber;
-    }
-
-    public void setBedNumber(int bedNumber) {
-        this.bedNumber = bedNumber;
     }
 
     public int getStatus() {

@@ -47,6 +47,8 @@ public class ProvinceEntity {
     @Column(name = "\"image_link\"")
     private String imgLink;
 
+
+
     public String getImgLink() {
         return imgLink;
     }

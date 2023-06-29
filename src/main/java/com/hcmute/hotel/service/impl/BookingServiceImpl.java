@@ -6,6 +6,7 @@ import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.repository.BookingRepository;
 import com.hcmute.hotel.service.BookingService;
+import com.paypal.api.payments.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,14 +64,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingEntity> getBookingByRoom(RoomEntity room) {
-        List<BookingEntity> list = bookingRepository.getAllByRoom(room);
+    public List<BookingEntity> getBookingByOwner(UserEntity userId) {
+        List<BookingEntity> list = bookingRepository.getAllByStay_Host(userId);
         return list;
     }
 
     @Override
-    public List<BookingEntity> getBookingByOwner(UserEntity userId) {
-        List<BookingEntity> list = bookingRepository.getAllByRoom_Stay_HostOrderByCheckinDateDesc(userId);
-        return list;
+    public BookingEntity getByPaymentId(String paymentId) {
+        Optional<BookingEntity> bookingEntity = bookingRepository.getByPaymentId(paymentId);
+        return bookingEntity.isEmpty() ? null : bookingEntity.get();
     }
 }

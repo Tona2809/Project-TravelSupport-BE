@@ -22,7 +22,8 @@ public interface BookingService {
     List<BookingEntity> getUserBooking(String userId);
     List<BookingEntity> getBookingByStay(String stayId);
 
-    List<BookingEntity> getBookingByRoom(RoomEntity room);
 
     List<BookingEntity> getBookingByOwner(UserEntity userId);
+
+    BookingEntity getByPaymentId(String paymentId);
 }

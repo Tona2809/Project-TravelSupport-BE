@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public enum StaySortEnum {
-    MAX_PEOPLE("max_people"),
+    MAX_PEOPLE("guest_number"),
     PRICE("price");
     private String name;
 }

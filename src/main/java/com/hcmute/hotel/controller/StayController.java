@@ -37,14 +37,17 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 @ComponentScan
 @RestController
@@ -63,32 +66,72 @@ public class StayController {
     static String E401="Unauthorized";
     static String E404="Not Found";
     static String E400="Bad Request";
-    @PostMapping("")
+    @PostMapping(value = "", consumes = {"multipart/form-data"})
     @ApiOperation("Add")
     @PreAuthorize("hasRole('ROLE_OWNER')")
-    public ResponseEntity<Object> addStay(HttpServletRequest req, @Valid @RequestBody AddNewStayRequest addNewStayRequest)
+    @Transactional
+    public ResponseEntity<Object> addStay(HttpServletRequest req,
+                                          @NotEmpty @RequestParam("name")  String stayName,
+                                          @NotEmpty @RequestParam("addressDescription") String addressDescription,
+                                          @RequestPart("stayImage") MultipartFile[] files,
+                                          @NotEmpty @RequestParam("type") String type,
+                                          @NotEmpty @RequestParam("stayDescription") String stayDescription,
+                                          @NotEmpty @RequestParam("provinceId") String provinceId,
+                                          @NotEmpty @RequestParam("checkinTime") String checkinTime,
+                                          @NotEmpty @RequestParam("checkoutTime") String checkoutTime,
+                                          @RequestParam("amenities") String[] amenities
+
+    )
     {
         UserEntity user;
         try {
             user = authenticateHandler.authenticateUser(req);
-            StayEntity stay = StayMapping.addReqToEntity(addNewStayRequest, user);
+            StayEntity stay = new StayEntity();
+            stay.setName(stayName);
+            stay.setStayDescription(stayDescription);
+            stay.setAddressDescription(addressDescription);
+            stay.setType(type);
+            stay.setCheckinTime(checkinTime);
+            stay.setCheckoutTime(checkoutTime);
             stay.setCreatedAt(LocalDateTime.now());
-            ProvinceEntity province = provinceService.getProvinceById(addNewStayRequest.getProvinceId());
+            stay.setTimeOpen(LocalDateTime.now().minus(1, ChronoUnit.DAYS));
+            stay.setTimeClose(LocalDateTime.now().plus(100,ChronoUnit.YEARS));
+            stay.setHost(user);
+            stay.setHidden(false);
+            stay.setStatus(1);
+            ProvinceEntity province = provinceService.getProvinceById(provinceId);
             if (province==null)
             {
                 return new ResponseEntity<>(new ErrorResponse(E404,"PROVINCE_NOT_FOUND","Can't find Province with id provided"),HttpStatus.NOT_FOUND);
             }
             stay.setProvince(province);
-            province.setPlaceCount(province.getPlaceCount()+1);
             stay = stayService.saveStay(stay);
-            provinceService.saveProvince(province);
-            return new ResponseEntity<>(stay, HttpStatus.OK);
+            try {
+                stayService.addStayImg(files,stay);
+            } catch (RuntimeException e)
+            {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                System.out.println(e.getMessage());
+                return new ResponseEntity<>(new ErrorResponse(E400,"CANNOT_ADD_IMAGE","Can't add image"),HttpStatus.BAD_REQUEST);
+            }
+            stay.setAmenities(new HashSet<>());
+            for (String amenityId : amenities)
+            {
+                AmenitiesEntity amenitiesEntity = amenitiesService.getAmenitiesById(amenityId);
+                if (amenitiesEntity!=null)
+                {
+                    stay.getAmenities().add(amenitiesEntity);
+                }
+            }
+            stay=stayService.saveStay(stay);
+            return new ResponseEntity<>(stay,HttpStatus.OK);
         }
         catch (BadCredentialsException e) {
                 return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+    }
+    }
 
-    }
-    }
+
     @GetMapping("")
     @ApiOperation("Get All")
     public ResponseEntity<Object> getAllStay()
@@ -98,26 +141,72 @@ public class StayController {
         map.put("content",listStay);
         return new ResponseEntity<>(map,HttpStatus.OK);
     }
-//    @PatchMapping(path = "/{id}")
-//    @ApiOperation("Update")
-//    public ResponseEntity<Object> patchStay(@PathVariable("id") String id,HttpServletRequest req,@RequestBody Map<Object,Object> maps)
-//    {
-//        StayEntity stay=stayService.getStayById(id);
-//        UserEntity user;
-//        try
-//        {
-//            user = authenticateHandler.authenticateUser(req);
-//            if (stay==null)
-//            {
-//                return new ResponseEntity<>(new ErrorResponse("Can't find Stay with id" + id),HttpStatus.NOT_FOUND);
-//            }
-//            return new ResponseEntity<>(stay, HttpStatus.OK);
-//        } catch (BadCredentialsException e) {
-//                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
 
-//        }
-//
-//    }
+
+    @PatchMapping(value = "", consumes = {"multipart/form-data"})
+    @ApiOperation("Update")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
+    @Transactional
+    public ResponseEntity<Object> patchStay(HttpServletRequest req,
+                                            @NotEmpty @RequestParam("id") String stayId,
+                                            @NotEmpty @RequestParam("name") String name,
+                                            @NotEmpty @RequestParam("addressDescription") String addressDescription,
+                                            @NotEmpty @RequestParam("stayDescription") String stayDescription,
+                                            @NotEmpty @RequestParam("checkinTime") String checkinTime,
+                                            @NotEmpty @RequestParam("checkoutTime") String checkoutTime,
+                                            @RequestParam(value = "amenities", required = false) String[] amenities,
+                                            @RequestParam(value = "removedImage", required = false) String[] removedImage,
+                                            @RequestPart(value = "newImage",required = false) MultipartFile[] files)
+    {
+        UserEntity user;
+        try
+        {
+            user = authenticateHandler.authenticateUser(req);
+            StayEntity stay = stayService.getStayById(stayId);
+            if (stay==null || stay.getHost() != user)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND_OR_NOT_OWNER","Can't find stay with id provided"),HttpStatus.NOT_FOUND);
+            }
+            stay.setName(name);
+            stay.setAddressDescription(addressDescription);
+            stay.setStayDescription(stayDescription);
+            stay.setCheckinTime(checkinTime);
+            stay.setCheckoutTime(checkoutTime);
+            Set<AmenitiesEntity> newAmenities = new HashSet<>();
+            if (amenities!=null) {
+                for (String amenityId : amenities) {
+                    AmenitiesEntity amenitiesEntity = amenitiesService.getAmenitiesById(amenityId);
+                    if (amenitiesEntity != null) {
+                        newAmenities.add(amenitiesEntity);
+                    }
+                }
+            }
+            stay.setAmenities(newAmenities);
+
+            try {
+                stayService.addStayImg(files,stay);
+            } catch (RuntimeException e) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                System.out.println(e.getMessage());
+                return new ResponseEntity<>(new ErrorResponse(E400, "CANNOT_ADD_IMAGE", "Can't add image"), HttpStatus.BAD_REQUEST);
+            }
+            if (removedImage !=null) {
+                for (String link : removedImage) {
+                    StayImageEntity stayImage = stayService.getImageByLink(link);
+                    if (stayImage != null) {
+                        stayService.deleteImage(stayImage);
+                        stay.getStayImage().remove(stayImage);
+                    }
+                }
+            }
+            stay = stayService.saveStay(stay);
+            return new ResponseEntity<>(stay, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+                    return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+
+        }
+
+    }
     @GetMapping("/{id}")
     @ApiOperation("Get By id")
     public ResponseEntity<Object> getStayByUid(@PathVariable("id") String id)
@@ -371,8 +460,8 @@ public class StayController {
             @RequestParam(required = false,defaultValue = "") LocalDateTime checkInDate,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             @RequestParam(required = false,defaultValue = "") LocalDateTime checkOutDate,
-            @RequestParam(defaultValue = "5") int maxPeople,
-            @RequestParam(defaultValue = "1000") int maxPrice,
+            @RequestParam(defaultValue = "1") int maxPeople,
+            @RequestParam(defaultValue = "50000000") int maxPrice,
             @RequestParam(defaultValue = "0") int minPrice,
             @RequestParam(required = false) List<String> amenitiesId,
             @RequestParam(defaultValue = "PRICE") StaySortEnum sort,

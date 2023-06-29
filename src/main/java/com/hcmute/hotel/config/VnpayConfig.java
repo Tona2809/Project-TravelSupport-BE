@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 public class VnpayConfig {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_Returnurl = "http://localhost:8080/vnpay_jsp/vnpay_return.jsp";
+    public static String vnp_returnUrl = "http://localhost:3000/api/booking/pay/success";
     public static String vnp_TmnCode = "CHNV2GTJ";
     public static String vnp_HashSecret = "DEEBMGFXZXGXBWQRUOEFALLNZNSMZNAA";
     public static String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
@@ -121,7 +121,7 @@ public class VnpayConfig {
 
     public static String getRandomNumber(int len) {
         Random rnd = new Random();
-        String chars = "0123456789";
+        String chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++) {
             sb.append(chars.charAt(rnd.nextInt(chars.length())));

@@ -15,11 +15,6 @@ public class StayMapping {
         stayEntity.setTimeOpen(addNewStayRequest.getTimeOpen());
         stayEntity.setTimeClose(addNewStayRequest.getTimeClose());
         stayEntity.setHost(user);
-        stayEntity.setMaxPeople(addNewStayRequest.getMaxPeople());
-        stayEntity.setRoomNumber(addNewStayRequest.getRoomNumber());
-        stayEntity.setBathNumber(addNewStayRequest.getBathNumber());
-        stayEntity.setBedroomNumber(addNewStayRequest.getBedroomNumber());
-        stayEntity.setBedNumber(addNewStayRequest.getBedNumber());
         stayEntity.setType(addNewStayRequest.getType());
         return stayEntity;
     }
@@ -30,11 +25,6 @@ public class StayMapping {
         stayEntity.setStayDescription(updateStayRequest.getStayDescription());
         stayEntity.setTimeOpen(updateStayRequest.getTimeOpen());
         stayEntity.setTimeClose(updateStayRequest.getTimeClose());
-        stayEntity.setMaxPeople(updateStayRequest.getMaxPeople());
-        stayEntity.setRoomNumber(updateStayRequest.getRoomNumber());
-        stayEntity.setBathNumber(updateStayRequest.getBathNumber());
-        stayEntity.setBedroomNumber(updateStayRequest.getBedroomNumber());
-        stayEntity.setBedNumber(updateStayRequest.getBedNumber());
         stayEntity.setType(updateStayRequest.getType());
         return stayEntity;
     }
