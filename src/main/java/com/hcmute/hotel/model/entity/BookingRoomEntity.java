@@ -32,6 +32,18 @@ public class BookingRoomEntity {
     @JsonIgnore
     private BookingEntity booking;
 
+    @ManyToOne
+    @JoinColumn(name= "\"voucher_id\"")
+    private VoucherEntity voucher;
+
+    public VoucherEntity getVoucher() {
+        return voucher;
+    }
+
+    public void setVoucher(VoucherEntity voucher) {
+        this.voucher = voucher;
+    }
+
     public String getId() {
         return id;
     }

@@ -3,6 +3,7 @@ package com.hcmute.hotel.controller;
 import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.mapping.RoomMapping;
 import com.hcmute.hotel.model.entity.RoomEntity;
+import com.hcmute.hotel.model.entity.RoomServiceEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.model.payload.request.Room.AddNewRoomRequest;
@@ -10,6 +11,7 @@ import com.hcmute.hotel.model.payload.request.Room.UpdateRoomRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
 import com.hcmute.hotel.service.RoomService;
+import com.hcmute.hotel.service.RoomServiceService;
 import com.hcmute.hotel.service.StayService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -24,7 +26,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.List;
+import javax.validation.constraints.NotNull;
+import java.net.URLDecoder;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @ComponentScan
 @RestController
@@ -35,6 +40,8 @@ public class RoomController {
     private final RoomService roomService;
 
     private final StayService stayService;
+
+    private final RoomServiceService roomServiceService;
 
     private final AuthenticateHandler authenticateHandler;
 
@@ -135,4 +142,78 @@ public class RoomController {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
+    @PostMapping("/roomService/{roomId}")
+    @ApiOperation("Add room service")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
+    public ResponseEntity<Object> addRoomServiceForRoom(@PathVariable("roomId") String roomId,@RequestParam String[] roomServiceId,HttpServletRequest req)
+    {
+        UserEntity user;
+
+        try
+        {
+            user = authenticateHandler.authenticateUser(req);
+            RoomEntity room = roomService.findRoomById(roomId);
+            if (room==null)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E400, "ROOM_NOT_FOUND", "Can n't find room with ids provided"),HttpStatus.BAD_REQUEST);
+            }
+            Set<RoomServiceEntity> serviceEntitySet = new HashSet<>();
+            for (String id : roomServiceId)
+            {
+                RoomServiceEntity serviceEntity = roomServiceService.findRoomServiceById(id);
+                if (serviceEntity!=null)
+                {
+                    serviceEntitySet.add(serviceEntity);
+                }
+            }
+            room.setRoomService(serviceEntitySet);
+            room = roomService.addRoom(room);
+            return new ResponseEntity<>(room,HttpStatus.OK);
+        }
+        catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @GetMapping("/searchAll")
+    @ApiOperation("Filter Stay room")
+    public ResponseEntity<Object> filterRoomStay(@RequestParam(value = "checkinDate",required = false) String checkinDateStr,
+                                                 @RequestParam(value = "checkoutDate",required = false) String checkoutDateStr,
+                                                 @RequestParam("guestAdults") int guestAdults,
+                                                 @RequestParam("guestChildren") int guestChildren,
+                                                 @RequestParam("guestInfants") int guestInfants,
+                                                 @RequestParam("stayId") String stayId)
+    {
+        LocalDateTime checkinDate = null;
+        LocalDateTime checkoutDate = null;
+
+        try {
+            checkinDateStr = URLDecoder.decode(checkinDateStr, "UTF-8");
+            checkoutDateStr = URLDecoder.decode(checkoutDateStr, "UTF-8");
+
+            if (checkinDateStr != null && !checkinDateStr.isEmpty()) {
+                checkinDate = LocalDateTime.parse(checkinDateStr);
+            }
+
+            if (checkoutDateStr != null && !checkoutDateStr.isEmpty()) {
+                checkoutDate = LocalDateTime.parse(checkoutDateStr);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+        List<RoomEntity> rooms = roomService.findRoomsByStayId(stayId);
+        List<RoomEntity> filterRooms = new ArrayList<>();
+        int guestNumbers = guestAdults + guestChildren + guestInfants;
+        int flexibleNumber = 1 + guestChildren/2 + guestInfants/3;
+        Map<String, Integer> result = roomService.getAvailableRoom(checkinDate, checkoutDate, guestNumbers, stayId, flexibleNumber);
+        for (RoomEntity room : rooms)
+        {
+            if (result.get(room.getId())!=null)
+            {
+                room.setNumberOfRoom(room.getNumberOfRoom()-result.get(room.getId()));
+                filterRooms.add(room);
+            }
+        }
+        return new ResponseEntity<>(filterRooms,HttpStatus.OK);
+    }
 }

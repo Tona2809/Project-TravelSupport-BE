@@ -20,7 +20,7 @@ public class VoucherMapping {
         voucherEntity.setDiscount(addNewVocuherRequest.getDiscount());
         voucherEntity.setCreateAt(LocalDateTime.now(ZoneId.of("GMT+07:00")));
         voucherEntity.setUpdateAt(LocalDateTime.now(ZoneId.of("GMT+07:00")));
-        voucherEntity.setHidden(false);
+        voucherEntity.setHidden(true);
         voucherEntity.setExpirationDate(addNewVocuherRequest.getExpiredDate());
         voucherEntity.setRemainingQuantity(0);
         voucherEntity.setQuantity(addNewVocuherRequest.getQuantity());

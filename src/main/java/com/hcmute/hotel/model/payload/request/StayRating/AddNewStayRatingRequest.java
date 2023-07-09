@@ -19,6 +19,6 @@ public class AddNewStayRatingRequest {
     private int rate;
     @NotEmpty(message = "Nội dung không được để trống")
     private String message;
-    @NotEmpty(message="stay_id")
-    private String stayid;
+    @NotEmpty(message="bookingId")
+    private String bookingId;
 }

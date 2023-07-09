@@ -25,13 +25,7 @@ public class StayRatingServiceImpl implements StayRatingService {
     private final StayRatingRepository stayRatingRepository;
     private final StayService stayService;
     @Override
-    public StayRatingEntity saveStayRating(AddNewStayRatingRequest addNewStayRatingRequest, UserEntity user) {
-        StayRatingEntity stayRating =new StayRatingEntity();
-        stayRating.setMessage(addNewStayRatingRequest.getMessage());
-        stayRating.setStay(stayService.getStayById(addNewStayRatingRequest.getStayid()));
-        stayRating.setRate(addNewStayRatingRequest.getRate());
-        stayRating.setCreated_at(LocalDateTime.now(ZoneId.of("GMT+07:00")));
-        stayRating.setUserRating(user);
+    public StayRatingEntity saveStayRating(StayRatingEntity stayRating) {
         return stayRatingRepository.save(stayRating);
     }
 

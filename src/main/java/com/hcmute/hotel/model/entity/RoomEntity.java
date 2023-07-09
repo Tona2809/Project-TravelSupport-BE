@@ -38,9 +38,16 @@ public class RoomEntity {
     @JoinColumn(name = "\"stay_id\"")
     private StayEntity stay;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "\"service_for_room\"", joinColumns = @JoinColumn(name = "\"room_id\""), inverseJoinColumns = @JoinColumn(name = "\"service_id\""))
+    private Set<RoomServiceEntity> roomService;
+
     @OneToMany(mappedBy = "room", targetEntity = BookingRoomEntity.class,cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<BookingRoomEntity> bookingRoom;
+
+    @OneToMany(mappedBy = "room",targetEntity = VoucherEntity.class,cascade = CascadeType.ALL)
+    private Set<VoucherEntity> voucher;
 
     @Column(name = "\"price\"")
     private int price;
@@ -48,6 +55,21 @@ public class RoomEntity {
     @Column(name= "\"is_hidden\"")
     private boolean isHidden;
 
+    public Set<RoomServiceEntity> getRoomService() {
+        return roomService;
+    }
+
+    public void setRoomService(Set<RoomServiceEntity> roomService) {
+        this.roomService = roomService;
+    }
+
+    public Set<VoucherEntity> getVoucher() {
+        return voucher;
+    }
+
+    public void setVoucher(Set<VoucherEntity> voucher) {
+        this.voucher = voucher;
+    }
 
     public boolean isHidden() {
         return isHidden;

@@ -15,15 +15,16 @@ import java.util.List;
 public interface BookingService {
 
     BookingEntity addBooking(BookingEntity booking);
-    boolean checkinValidate(String stayId, LocalDateTime checkinDate);
-    boolean checkoutValidate(String stayId,LocalDateTime checkinDate,LocalDateTime checkoutDate);
+    boolean checkinValidate(String stayId, LocalDateTime checkinDate, String userId);
+    boolean checkoutValidate(String stayId,LocalDateTime checkinDate,LocalDateTime checkoutDate, String userId);
     BookingEntity findBookingById(String id);
     boolean checkUserDateValidate(String userId,LocalDateTime checkinDate,LocalDateTime checkoutDate);
     List<BookingEntity> getUserBooking(String userId);
     List<BookingEntity> getBookingByStay(String stayId);
-
-
-    List<BookingEntity> getBookingByOwner(UserEntity userId);
+    void setCompletedBooking(String bookingId);
+    List<BookingEntity> getBookingByOwner(UserEntity userId, String searchKey);
 
     BookingEntity getByPaymentId(String paymentId);
+
+    void deleteBookingById(String bookingId);
 }

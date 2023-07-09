@@ -8,7 +8,7 @@ import javax.persistence.*;
 
 @RestResource(exported = false)
 @Entity
-@Table(name = "\"roomservice\"")
+@Table(name = "\"room_service\"")
 public class RoomServiceEntity {
     @Id
     @Column(name = "\"id\"")
@@ -23,8 +23,8 @@ public class RoomServiceEntity {
     @Column(name = "\"room_service_name\"")
     private String roomServiceName;
 
-    @Column(name ="\"image_link\"")
-    private String imgLink;
+
+
 
     public String getId() {
         return id;
@@ -42,19 +42,13 @@ public class RoomServiceEntity {
         this.roomServiceName = roomServiceName;
     }
 
-    public String getImgLink() {
-        return imgLink;
-    }
-
-    public void setImgLink(String imgLink) {
-        this.imgLink = imgLink;
-    }
 
     public RoomServiceEntity() {
     }
 
-    public RoomServiceEntity(String roomServiceName, String imgLink) {
+
+
+    public RoomServiceEntity(String roomServiceName) {
         this.roomServiceName = roomServiceName;
-        this.imgLink = imgLink;
     }
 }

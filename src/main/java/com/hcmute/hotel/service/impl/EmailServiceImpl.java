@@ -1,5 +1,6 @@
 package com.hcmute.hotel.service.impl;
 
+import com.hcmute.hotel.model.entity.BookingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,10 @@ import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
 import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @Transactional
@@ -129,6 +134,69 @@ public class EmailServiceImpl implements EmailService {
         MimeMessageHelper helper = new MimeMessageHelper(message);
         helper.setFrom("managementsitetrack@gmail.com",senderName);
         content = content.replace("[[name]]", user.getFullName()==null ? "" : user.getFullName());
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+        emailSender.send(message);
+    }
+
+    @Override
+    public void sendOwnerBookingConfirmation(BookingEntity booking, String ownerName) throws MessagingException, UnsupportedEncodingException {
+        String toAddress =booking.getStay().getHost().getEmail();
+        String senderName="UTETravel";
+        String subject = "New Booking on UTE travel. Booking id:[[bookingId]]";
+        String content = "Dear [[name]], <br>"
+                + "We are delighted to inform you that a new booking request has been made for your stay, [[stayName]], for the following date:<br>"
+                + "Check-in: [[startDate]]<br>"
+                + "Check-out: [[endDate]]<br>"
+                + "Booking Details:<br>"
+                + "Customer Name: [[customerName]]<br>"
+                + "Customer Email: [[customerEmail]]<br>"
+                + "Customer Phone: [[CustomerPhoneNumber]]<br>"
+                + "If you wish to accept the booking request, please log in to your account and navigate to the Trang quản lý section. From there, you can confirm the booking and update the availability calendar accordingly."
+                + "Please note that the booking is not confirmed until you accept it through your account. If you do not take any action within [[specifyTime]], the booking request will automatically expire.<br>"
+                + "Best regards,"
+                + "UTETravel.";
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        helper.setFrom("managementsitetrack@gmail.com",senderName);
+        content=content.replace("[[bookingId]]",booking.getId());
+        content=content.replace("[[name]]",booking.getStay().getHost().getFullName());
+        content=content.replace("[[stayName]]", booking.getStay().getName());
+        content=content.replace("[[startDate]]", booking.getCheckinDate().toLocalDate().toString());
+        content=content.replace("[[endDate]]", booking.getCheckoutDate().toLocalDate().toString());
+        content=content.replace("[[customerName]]",booking.getUser().getFullName());
+        content=content.replace("[[customerEmail]]",booking.getUser().getEmail());
+        content=content.replace("[[CustomerPhoneNumber]]",booking.getUser().getPhone());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        content=content.replace("[[specifyTime]]",booking.getExpiredConfirmTime().format(formatter));
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+        emailSender.send(message);
+    }
+
+    @Override
+    public void sendUserDeclineBookingEmail(BookingEntity booking, String reason) throws MessagingException, UnsupportedEncodingException {
+        String toAddress =booking.getStay().getHost().getEmail();
+        String senderName="UTETravel";
+        String subject = "Your recent booking have been decline";
+        String content = "Dear [[name]], <br>"
+                + "We regret to inform you that we are unable to accommodate your booking request at [[stayName]] for the following requested dates:<br>"
+                + "Check-in: [[startDate]]<br>"
+                + "Check-out: [[endDate]]<br>"
+                + "We understand that this may come as a disappointment, and we sincerely apologize for any inconvenience caused. Unfortunately, due to [[reason]], we are unable to secure your reservation.<br>"
+                + "Once again, we apologize for any inconvenience caused, and we appreciate your understanding in this matter. We hope to have the opportunity to welcome you as our guest in the future.<br>"
+                + "Best regards,"
+                + "UTETravel.";
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        helper.setFrom("managementsitetrack@gmail.com",senderName);
+        content=content.replace("[[name]]",booking.getStay().getHost().getFullName());
+        content=content.replace("[[stayName]]", booking.getStay().getName());
+        content=content.replace("[[reason]]", reason);
+        content=content.replace("[[startDate]]", booking.getCheckinDate().toLocalDate().toString());
+        content=content.replace("[[endDate]]", booking.getCheckoutDate().toLocalDate().toString());
         helper.setTo(toAddress);
         helper.setSubject(subject);
         helper.setText(content, true);

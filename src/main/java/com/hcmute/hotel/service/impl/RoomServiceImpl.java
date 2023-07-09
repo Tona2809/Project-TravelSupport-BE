@@ -7,7 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -38,5 +42,36 @@ public class RoomServiceImpl implements RoomService {
         List<RoomEntity> list = roomRepository.findByListId(listId);
         return list;
     }
+
+    @Override
+    public Map<String,Integer> getAvailableRoom(LocalDateTime checkinDate, LocalDateTime checkoutDate, int guestNumber, String stayId, int flexibleNumbers) {
+        List<Object> result = roomRepository.getAvailableRoom(checkinDate, checkoutDate,guestNumber,stayId, flexibleNumbers);
+        return ResultToMap(result);
+    }
+
+    @Override
+    public Map<String, Integer> getCurrentAvailableRoom(LocalDateTime checkinDate, LocalDateTime checkoutDate, String stayId) {
+        List<Object> result = roomRepository.getCurrentAvailableRoom(checkinDate, checkoutDate,stayId);
+        return ResultToMap(result);
+    }
+
+    private Map<String, Integer> ResultToMap(List<Object> result) {
+        Map<String, Integer> roomMap = new HashMap<>();
+
+        for (Object obj : result) {
+            Object[] row = (Object[]) obj;
+            BigDecimal countBigDecimal = (BigDecimal) row[1];
+            if (countBigDecimal == null)
+            {
+                countBigDecimal= BigDecimal.valueOf(0);
+            }
+            String roomId = (String) row[0];
+            Integer count = countBigDecimal.intValue();
+
+            roomMap.put(roomId, count);
+        }
+        return roomMap;
+    }
+
 
 }

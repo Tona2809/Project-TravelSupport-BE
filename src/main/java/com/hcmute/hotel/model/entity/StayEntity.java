@@ -80,10 +80,11 @@ public class StayEntity {
     @OneToMany(mappedBy = "stay",targetEntity = RoomEntity.class,cascade = CascadeType.ALL)
     private Set<RoomEntity> room;
 
+    @Column(name = "\"longitude\"")
+    private Double longitude;
 
-    @OneToMany(mappedBy = "stay",targetEntity = VoucherEntity.class,cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<VoucherEntity> voucher;
+    @Column(name = "\"latitude\"")
+    private Double latitude;
 
     @OneToMany(mappedBy = "stay",targetEntity = BookingEntity.class)
     @JsonIgnore
@@ -92,6 +93,22 @@ public class StayEntity {
     private int minPrice;
 
     private int maxPeople;
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
 
     public String getCheckinTime() {
         return checkinTime;
@@ -278,14 +295,6 @@ public class StayEntity {
 
     public void setLatestUpdateAt(LocalDateTime latestUpdateAt) {
         this.latestUpdateAt = latestUpdateAt;
-    }
-
-    public Set<VoucherEntity> getVoucher() {
-        return voucher;
-    }
-
-    public void setVoucher(Set<VoucherEntity> voucher) {
-        this.voucher = voucher;
     }
 
     public StayEntity() {

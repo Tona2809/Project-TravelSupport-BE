@@ -13,13 +13,18 @@ import java.util.List;
 @Service
 public interface RoomServiceService {
 
-    RoomServiceEntity addRoomService(RoomServiceEntity roomService);
+    List<RoomServiceEntity> addRoomService(List<RoomServiceEntity> roomService);
+
+    RoomServiceEntity saveRoomService(RoomServiceEntity roomService);
 
     RoomServiceEntity findRoomServiceById(String id);
 
+    RoomServiceEntity findRoomServiceByName(String name);
+
     List<RoomServiceEntity> getAllRoomSerivceByRoomID(String stayId);
+
+    List<RoomServiceEntity> getAllRoomService();
 
     void deleteById(String id);
 
-    RoomServiceEntity addImage(MultipartFile file, RoomServiceEntity roomService);
 }

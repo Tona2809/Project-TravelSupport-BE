@@ -1,6 +1,7 @@
 package com.hcmute.hotel.controller;
 
 import com.hcmute.hotel.handler.AuthenticateHandler;
+import com.hcmute.hotel.model.entity.BookingEntity;
 import com.hcmute.hotel.model.entity.StayEntity;
 import com.hcmute.hotel.model.entity.StayRatingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
@@ -9,6 +10,7 @@ import com.hcmute.hotel.model.payload.request.StayRating.AddNewStayRatingRequest
 import com.hcmute.hotel.model.payload.request.StayRating.UpdateStayRatingRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
+import com.hcmute.hotel.service.BookingService;
 import com.hcmute.hotel.service.StayRatingService;
 import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.UserService;
@@ -26,10 +28,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @ComponentScan
@@ -41,6 +41,8 @@ public class StayRatingController {
     AuthenticateHandler authenticateHandler;
     private final UserService userService;
     private final StayRatingService stayRatingService;
+
+    private final BookingService bookingService;
     private final StayService stayService;
     static String E401="Unauthorized";
     static String E404="Not Found";
@@ -55,13 +57,21 @@ public class StayRatingController {
         UserEntity user;
         try {
             user = authenticateHandler.authenticateUser(req);
-            StayEntity stay = stayService.getStayById(addNewStayRatingRequest.getStayid());
-            if ( stay==null || stay.getHost()==user  )
+            BookingEntity booking = bookingService.findBookingById(addNewStayRatingRequest.getBookingId());
+            if ( booking==null || !Objects.equals(user.getId(), booking.getUser().getId()))
             {
-                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND_OR_OWNER","Can't find Stay with id provided or you are stay owner"),HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponse(E404,"BOOKING_NOT_FOUND","Can't find Stay with id provided or you are stay owner"),HttpStatus.NOT_FOUND);
             }
-            StayRatingEntity hotelRating= stayRatingService.saveStayRating(addNewStayRatingRequest,user);
-            return new ResponseEntity<>(hotelRating, HttpStatus.OK);
+            StayRatingEntity stayRating = new StayRatingEntity();
+            stayRating.setStay(booking.getStay());
+            stayRating.setRate(addNewStayRatingRequest.getRate());
+            stayRating.setMessage(addNewStayRatingRequest.getMessage());
+            stayRating.setUserRating(user);
+            stayRating.setCheckinDate(booking.getCheckinDate().toLocalDate());
+            stayRating.setCheckoutDate(booking.getCheckoutDate().toLocalDate());
+            stayRating.setCreated_at(LocalDateTime.now());
+            stayRatingService.saveStayRating(stayRating);
+            return new ResponseEntity<>(stayRating, HttpStatus.OK);
         } catch (BadCredentialsException e){
             return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
 

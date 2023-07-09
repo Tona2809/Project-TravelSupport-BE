@@ -1,9 +1,6 @@
 package com.hcmute.hotel.service.impl;
 
-import com.hcmute.hotel.model.entity.ProvinceEntity;
-import com.hcmute.hotel.model.entity.StayEntity;
-import com.hcmute.hotel.model.entity.UserEntity;
-import com.hcmute.hotel.model.entity.VoucherEntity;
+import com.hcmute.hotel.model.entity.*;
 import com.hcmute.hotel.repository.UserRepository;
 import com.hcmute.hotel.repository.VoucherRepository;
 import com.hcmute.hotel.service.VoucherService;
@@ -11,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -34,8 +32,8 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public List<VoucherEntity> getAllVouchersByStay(String stayid) {
-        List<VoucherEntity> voucherEntityList = voucherRepository.getAllVoucherByStay(stayid);
+    public List<VoucherEntity> getAllVouchersByRoom(String roomId) {
+        List<VoucherEntity> voucherEntityList = voucherRepository.getAllVoucherByRoom(roomId);
         return voucherEntityList;
     }
 
@@ -77,8 +75,16 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public List<VoucherEntity> getAllVoucherByUser(UserEntity user, StayEntity stay) {
-        List<VoucherEntity> voucherEntityList = voucherRepository.getAllVoucherByUser(user.getId(), stay.getId());
+    public List<VoucherEntity> getAllVoucherByUser(String userId, String roomId) {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        List<VoucherEntity> voucherEntityList = voucherRepository.getAllVoucherByUser(userId, roomId, localDateTime);
+        return voucherEntityList;
+    }
+
+    @Override
+    public List<VoucherEntity> getAllVoucherByStay(String stayId) {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        List<VoucherEntity> voucherEntityList = voucherRepository.getAllVoucherByStay(stayId,localDateTime);
         return voucherEntityList;
     }
 }

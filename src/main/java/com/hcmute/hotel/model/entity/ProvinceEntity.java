@@ -47,7 +47,17 @@ public class ProvinceEntity {
     @Column(name = "\"image_link\"")
     private String imgLink;
 
+    @OneToMany(mappedBy = "province", targetEntity = PlaceEntity.class)
+    @JsonIgnore
+    private Set<PlaceEntity> place;
 
+    public Set<PlaceEntity> getPlace() {
+        return place;
+    }
+
+    public void setPlace(Set<PlaceEntity> place) {
+        this.place = place;
+    }
 
     public String getImgLink() {
         return imgLink;

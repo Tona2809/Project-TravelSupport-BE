@@ -4,10 +4,7 @@ import com.hcmute.hotel.handler.AuthenticateHandler;
 import com.hcmute.hotel.mapping.ProvinceMapping;
 import com.hcmute.hotel.mapping.StayMapping;
 import com.hcmute.hotel.mapping.VoucherMapping;
-import com.hcmute.hotel.model.entity.ProvinceEntity;
-import com.hcmute.hotel.model.entity.StayEntity;
-import com.hcmute.hotel.model.entity.UserEntity;
-import com.hcmute.hotel.model.entity.VoucherEntity;
+import com.hcmute.hotel.model.entity.*;
 import com.hcmute.hotel.model.payload.request.Province.UpdateProvinceRequest;
 import com.hcmute.hotel.model.payload.request.Stay.AddNewStayRequest;
 import com.hcmute.hotel.model.payload.request.Voucher.AddVoucherRequest;
@@ -16,6 +13,7 @@ import com.hcmute.hotel.model.payload.response.DataResponse;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.model.payload.response.MessageResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
+import com.hcmute.hotel.service.RoomService;
 import com.hcmute.hotel.service.StayService;
 import com.hcmute.hotel.service.VoucherService;
 import io.swagger.annotations.ApiOperation;
@@ -34,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,24 +51,27 @@ public class VoucherController {
     AuthenticateHandler authenticateHandler;
     private final VoucherService voucherService;
     private final StayService stayService;
+
+    private final RoomService roomService;
     static String E401 = "Unauthorized";
     static String E404 = "Not Found";
     static String E400 = "Bad Request";
 
     @PostMapping("")
     @ApiOperation("Add")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
     public ResponseEntity<Object> addVoucher(HttpServletRequest req, @Valid @RequestBody AddVoucherRequest addNewVoucherRequest) {
         UserEntity user;
         try {
             user = authenticateHandler.authenticateUser(req);
             VoucherEntity voucher = VoucherMapping.addReqToEntity(addNewVoucherRequest);
-            StayEntity stay = stayService.getStayById(addNewVoucherRequest.getStayId());
-            if (stay == null) {
-                return new ResponseEntity<>(new ErrorResponse(E404, "STAY_NOT_FOUND", "Can't find Province with id provided"), HttpStatus.NOT_FOUND);
+            RoomEntity room = roomService.findRoomById(addNewVoucherRequest.getRoomId());
+            if (room == null) {
+                return new ResponseEntity<>(new ErrorResponse(E404, "ROOM_NOT_FOUND", "Can't find Room with id provided"), HttpStatus.NOT_FOUND);
             } else {
-                voucher.setStay(stay);
+                voucher.setRoom(room);
             }
+
             voucherService.addVoucher(voucher);
             return new ResponseEntity<>(voucher, HttpStatus.OK);
         } catch (BadCredentialsException e) {
@@ -84,34 +86,32 @@ public class VoucherController {
         return new DataResponse(voucherEntityList);
     }
 
-    @GetMapping("/stay/{stayid}")
-    @ApiOperation("Find vouchers by stay id")
-    public ResponseEntity<Object> getVouchersByStayId(@PathVariable("stayid") String stayid) {
-        StayEntity stay = stayService.getStayById(stayid);
-        if(stay == null) {
+    @GetMapping("/room/{roomId}")
+    @ApiOperation("Find vouchers by room id")
+    public ResponseEntity<Object> getVouchersByStayId(@PathVariable("roomId") String roomId) {
+        RoomEntity room = roomService.findRoomById(roomId);
+        if(room == null) {
             MessageResponse messageResponse = new MessageResponse("Bad Request", "STAY_ID_NOT_FOUND", "Stay id not found");
             return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
         } else {
-            List<VoucherEntity> voucherEntityList = voucherService.getAllVouchersByStay(stayid);
-            if (voucherEntityList == null) {
-                MessageResponse messageResponse = new MessageResponse("Bad Request", "VOUCHER_CAN_NOT_FOUND", "Voucher can not found");
-                return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
-            }
+            List<VoucherEntity> voucherEntityList = voucherService.getAllVouchersByRoom(roomId);
             return new ResponseEntity<>(voucherEntityList, HttpStatus.OK);
         }
     }
-    @GetMapping("/{id}")
+    @GetMapping("/getByIds")
     @ApiOperation("Find by id")
     //@PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> getVoucherById(@PathVariable String id) {
-        VoucherEntity voucherEntity = voucherService.getVoucherById(id);
-        if (voucherEntity == null) {
-            MessageResponse messageResponse = new MessageResponse("Bad Request", "VOUCHER_ID_NOT_FOUND", "Voucher id not found");
-            return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
+    public ResponseEntity<Object> getVoucherById(@RequestParam String[] ids) {
+        List<VoucherEntity> list = new ArrayList<>();
+        for (String id : ids) {
+            VoucherEntity voucherEntity = voucherService.getVoucherById(id);
+            if (voucherEntity == null) {
+                MessageResponse messageResponse = new MessageResponse("Bad Request", "VOUCHER_ID_NOT_FOUND", "Voucher id not found");
+                return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
+            }
+            list.add(voucherEntity);
         }
-        Map<String, Object> map = new HashMap<>();
-        map.put("content", voucherEntity);
-        return new ResponseEntity<>(map, HttpStatus.OK);
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
     @PatchMapping("/{id}")
     @ApiOperation("Update")
@@ -172,26 +172,58 @@ public class VoucherController {
             }
         } else throw new BadCredentialsException("access token is missing");
     }
-    @GetMapping("/userstay/{stayid}")
+    @GetMapping("/userVoucher/{roomId}")
     @ApiOperation("Get Voucher by user and stay id")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> getVoucherByUser(HttpServletRequest req,@PathVariable("stayid") String stayid)
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<Object> getVoucherByUser(HttpServletRequest req,@PathVariable("roomId") String roomId)
     {
         UserEntity user;
-        StayEntity stay = stayService.getStayById(stayid);
-        if(stay == null) {
-            return new ResponseEntity<>(new ErrorResponse(E404, "STAY_NOT_FOUND", "Can't find stay"), HttpStatus.NOT_FOUND);
+        RoomEntity room = roomService.findRoomById(roomId);
+        if(room == null) {
+            return new ResponseEntity<>(new ErrorResponse(E404, "ROOM_NOT_FOUND", "Can't find room"), HttpStatus.NOT_FOUND);
         }
         try {
             user = authenticateHandler.authenticateUser(req);
-            List<VoucherEntity> voucher = voucherService.getAllVoucherByUser(user, stay);
-            if (voucher == null) {
-                return new ResponseEntity<>(new ErrorResponse(E404, "VOUCHERS_NOT_FOUND", "Can't find vouchers with this user"), HttpStatus.NOT_FOUND);
-            }
+            List<VoucherEntity> voucher = voucherService.getAllVoucherByUser(user.getId(), roomId);
             return new ResponseEntity<>(voucher,HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
+
+    @GetMapping("/stay/{stayId}")
+    @ApiOperation("Get Voucher by stay id")
+    public ResponseEntity<Object> getVoucherByStay(HttpServletRequest req,@PathVariable("stayId") String stayId)
+    {
+        UserEntity user;
+        StayEntity stay = stayService.getStayById(stayId);
+        if(stay == null) {
+            return new ResponseEntity<>(new ErrorResponse(E404, "STAY_NOT_FOUND", "Can't find stay"), HttpStatus.NOT_FOUND);
+        }
+            List<VoucherEntity> voucher = voucherService.getAllVoucherByStay(stayId);
+            return new ResponseEntity<>(voucher,HttpStatus.OK);
+    }
+    @PatchMapping("/active/{voucherId}")
+    @ApiOperation("Active Voucher")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
+    public ResponseEntity<Object> activeVoucher(@PathVariable("voucherId") String voucherId, HttpServletRequest req)
+    {
+        UserEntity user;
+        try
+        {
+            user = authenticateHandler.authenticateUser(req);
+            VoucherEntity voucher = voucherService.getVoucherById(voucherId);
+            if (voucher==null || voucher.getExpirationDate().compareTo(LocalDateTime.now())<0)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E404, "VOUCHERS_NOT_FOUND", "Voucher not found with id or it expired"), HttpStatus.NOT_FOUND);
+            }
+            voucher.setHidden(false);
+            voucher = voucherService.addVoucher(voucher);
+            return new ResponseEntity<>(voucher,HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
 }
 

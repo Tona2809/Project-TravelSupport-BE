@@ -12,7 +12,7 @@ import java.util.List;
 @Component
 @Service
 public interface StayRatingService {
-    StayRatingEntity saveStayRating(AddNewStayRatingRequest addNewStayRatingRequest, UserEntity user);
+    StayRatingEntity saveStayRating(StayRatingEntity stayRating);
     StayRatingEntity updateStayRating(UpdateStayRatingRequest updateStayRatingRequest);
     public List<StayRatingEntity> getAllStayRating();
     StayRatingEntity getStayRatingById(String id);

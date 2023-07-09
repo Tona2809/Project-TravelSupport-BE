@@ -45,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -79,6 +80,8 @@ public class StayController {
                                           @NotEmpty @RequestParam("provinceId") String provinceId,
                                           @NotEmpty @RequestParam("checkinTime") String checkinTime,
                                           @NotEmpty @RequestParam("checkoutTime") String checkoutTime,
+                                          @NotNull @RequestParam("longitude") String longitude,
+                                          @NotNull @RequestParam("latitude") String latitude,
                                           @RequestParam("amenities") String[] amenities
 
     )
@@ -99,6 +102,8 @@ public class StayController {
             stay.setHost(user);
             stay.setHidden(false);
             stay.setStatus(1);
+            stay.setLongitude(Double.valueOf(longitude));
+            stay.setLatitude(Double.valueOf(latitude));
             ProvinceEntity province = provinceService.getProvinceById(provinceId);
             if (province==null)
             {
@@ -124,6 +129,8 @@ public class StayController {
                 }
             }
             stay=stayService.saveStay(stay);
+            province.setPlaceCount(province.getPlaceCount()+1);
+            provinceService.saveProvince(province);
             return new ResponseEntity<>(stay,HttpStatus.OK);
         }
         catch (BadCredentialsException e) {
@@ -156,7 +163,9 @@ public class StayController {
                                             @NotEmpty @RequestParam("checkoutTime") String checkoutTime,
                                             @RequestParam(value = "amenities", required = false) String[] amenities,
                                             @RequestParam(value = "removedImage", required = false) String[] removedImage,
-                                            @RequestPart(value = "newImage",required = false) MultipartFile[] files)
+                                            @RequestPart(value = "newImage",required = false) MultipartFile[] files,
+                                            @NotNull @RequestParam("longitude") String longitude,
+                                            @NotNull @RequestParam("latitude") String latitude)
     {
         UserEntity user;
         try
@@ -172,6 +181,8 @@ public class StayController {
             stay.setStayDescription(stayDescription);
             stay.setCheckinTime(checkinTime);
             stay.setCheckoutTime(checkoutTime);
+            stay.setLongitude(Double.valueOf(longitude));
+            stay.setLatitude(Double.valueOf(latitude));
             Set<AmenitiesEntity> newAmenities = new HashSet<>();
             if (amenities!=null) {
                 for (String amenityId : amenities) {

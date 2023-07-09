@@ -48,8 +48,9 @@ public class VoucherEntity {
     private boolean isHidden;
 
     @ManyToOne()
-    @JoinColumn(name = "\"stay_id\"")
-    private StayEntity stay;
+    @JoinColumn(name = "\"room_id\"")
+    @JsonIgnore
+    private RoomEntity room;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JsonIgnore
@@ -60,6 +61,18 @@ public class VoucherEntity {
 
     @Column(name="\"remainingQuatity\"")
     private int remainingQuantity;
+
+    @OneToMany(mappedBy = "voucher", targetEntity = BookingRoomEntity.class)
+    @JsonIgnore
+    private Set<BookingRoomEntity> bookingRoom;
+
+    public Set<BookingRoomEntity> getBookingRoom() {
+        return bookingRoom;
+    }
+
+    public void setBookingRoom(Set<BookingRoomEntity> bookingRoom) {
+        this.bookingRoom = bookingRoom;
+    }
 
     public String getName() {
         return name;
@@ -117,12 +130,12 @@ public class VoucherEntity {
         isHidden = hidden;
     }
 
-    public StayEntity getStay() {
-        return stay;
+    public RoomEntity getRoom() {
+        return room;
     }
 
-    public void setStay(StayEntity stay) {
-        this.stay = stay;
+    public void setRoom(RoomEntity room) {
+        this.room = room;
     }
 
     public Set<UserEntity> getUsers() {
@@ -152,13 +165,13 @@ public class VoucherEntity {
     public VoucherEntity() {
     }
 
-    public VoucherEntity(int discount, LocalDateTime createAt, LocalDateTime updateAt, LocalDateTime expirationDate, boolean isHidden, StayEntity stay, int quantity, int remainingQuantity) {
+    public VoucherEntity(int discount, LocalDateTime createAt, LocalDateTime updateAt, LocalDateTime expirationDate, boolean isHidden, RoomEntity room, int quantity, int remainingQuantity) {
         this.discount = discount;
         this.createAt = createAt;
         this.updateAt = updateAt;
         this.expirationDate = expirationDate;
         this.isHidden = isHidden;
-        this.stay = stay;
+        this.room = room;
         this.quantity = quantity;
         this.remainingQuantity = remainingQuantity;
     }

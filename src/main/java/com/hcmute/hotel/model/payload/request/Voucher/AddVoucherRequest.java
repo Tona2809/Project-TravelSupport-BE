@@ -20,8 +20,8 @@ public class AddVoucherRequest {
     @NotNull(message = "Voucher discount"+EMPTY_MESSAGE)
     int discount;
     LocalDateTime expiredDate;
-    @NotEmpty(message ="stay id" +EMPTY_MESSAGE)
-    String stayId;
+    @NotEmpty(message ="room id" +EMPTY_MESSAGE)
+    String roomId;
     @NotNull(message ="quantity"+EMPTY_MESSAGE)
     int quantity;
 

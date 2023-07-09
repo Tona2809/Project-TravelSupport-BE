@@ -13,7 +13,8 @@ public interface VoucherService {
 
     VoucherEntity addVoucher(VoucherEntity entity);
     List<VoucherEntity> getAllVouchers();
-    List<VoucherEntity> getAllVouchersByStay(String stayid);
+    List<VoucherEntity> getAllVouchersByRoom(String roomId);
+
 
     VoucherEntity getVoucherById(String id);
 
@@ -21,9 +22,11 @@ public interface VoucherService {
 
     boolean findByName(String name);
 
-    public VoucherEntity userVoucher(UserEntity user,VoucherEntity voucher);
+    VoucherEntity userVoucher(UserEntity user,VoucherEntity voucher);
 
     boolean findByNameAndId(String name, String id);
 
-    List<VoucherEntity> getAllVoucherByUser(UserEntity user, StayEntity stay);
+    List<VoucherEntity> getAllVoucherByUser(String userId, String roomId);
+
+    List<VoucherEntity> getAllVoucherByStay(String stayId);
 }

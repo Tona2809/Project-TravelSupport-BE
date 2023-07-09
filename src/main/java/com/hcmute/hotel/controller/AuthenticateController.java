@@ -111,7 +111,7 @@ public class AuthenticateController {
     public ResponseEntity<Object> registerAccountOwner(@RequestBody @Valid AddNewOwnerRequest request) {
         UserEntity user = new UserEntity();
         if (userService.findByEmail(request.getEmail()) != null) {
-            return new ResponseEntity<>(new ErrorResponse(E400, "PHONE_NUMBER_EXISTS", "Phone number has been used"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ErrorResponse(E400, "EMAIL_EXISTS", "Email has been used"), HttpStatus.BAD_REQUEST);
         }
         user = UserMapping.registerOwnerToEntity(user, request);
         try {

@@ -13,4 +13,6 @@ public interface ImageStorageService {
     String saveProvinceImage(MultipartFile file,String fileName);
     String saveAmenitiesImage(MultipartFile file,String fileName);
     String saveUserImage(MultipartFile file,String fileName);
+
+    String savePlaceImage(MultipartFile file,String fileName);
 }

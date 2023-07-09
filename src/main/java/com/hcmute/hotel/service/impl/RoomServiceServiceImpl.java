@@ -24,7 +24,12 @@ public class RoomServiceServiceImpl implements RoomServiceService {
     final ImageStorageService imageStorageService;
     private final RoomServiceRepository roomServiceRepository;
     @Override
-    public RoomServiceEntity addRoomService(RoomServiceEntity roomService) {
+    public List<RoomServiceEntity> addRoomService(List<RoomServiceEntity> roomService) {
+        return roomServiceRepository.saveAll(roomService);
+    }
+
+    @Override
+    public RoomServiceEntity saveRoomService(RoomServiceEntity roomService) {
         return roomServiceRepository.save(roomService);
     }
 
@@ -35,9 +40,20 @@ public class RoomServiceServiceImpl implements RoomServiceService {
     }
 
     @Override
+    public RoomServiceEntity findRoomServiceByName(String name) {
+        Optional<RoomServiceEntity> roomServiceEntity = roomServiceRepository.findByRoomServiceName(name);
+        return roomServiceEntity.isEmpty() ? null : roomServiceEntity.get();
+    }
+
+    @Override
     public List<RoomServiceEntity> getAllRoomSerivceByRoomID(String roomId) {
         List<RoomServiceEntity> roomServiceEntityList = roomServiceRepository.findAllByRoomId(roomId);
         return roomServiceEntityList;
+    }
+
+    @Override
+    public List<RoomServiceEntity> getAllRoomService() {
+        return roomServiceRepository.findAll();
     }
 
     @Override
@@ -45,23 +61,5 @@ public class RoomServiceServiceImpl implements RoomServiceService {
         roomServiceRepository.deleteById(id);
     }
 
-    @Override
-    public RoomServiceEntity addImage(MultipartFile file, RoomServiceEntity roomService) throws FileNotImageException {
-        if (!isImageFile(file))
-        {
-            throw  new FileNotImageException("This file is not Image type");
-        }
-        else
-        {
-            String uuid = String.valueOf(UUID.randomUUID());
-            String url = imageStorageService.saveProvinceImage(file,roomService.getId()+ "/img" + uuid);
-            roomService.setImgLink(url);
-            roomService = roomServiceRepository.save(roomService);
-            return roomService;
-        }
-    }
-    public boolean isImageFile(MultipartFile file) {
-        return Arrays.asList(new String[] {"image/png","image/jpg","image/jpeg", "image/bmp"})
-                .contains(file.getContentType().trim().toLowerCase());
-    }
+
 }

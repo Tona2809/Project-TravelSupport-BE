@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @EnableJpaRepositories
@@ -16,9 +17,13 @@ public interface VoucherRepository extends JpaRepository<VoucherEntity, String> 
     @Query(value = "select * from voucher where name like %?%  and id <> ?", nativeQuery = true)
     List<VoucherEntity> findByNameAndId(String name, String id);
 
-    @Query(value ="select * from voucher where stay_id = ? and expire_at >= curdate()",nativeQuery = true)
-    List<VoucherEntity> getAllVoucherByStay(String stayId);
+    @Query(value ="select * from voucher where room_id = ?",nativeQuery = true)
+    List<VoucherEntity> getAllVoucherByRoom(String stayId);
 
-    @Query(value = "select voucher.* from voucher inner join user_voucher where voucher.id = user_voucher.voucher_id and voucher.expire_at >= curdate() and user_voucher.user_id = ? and voucher.stay_id = ?", nativeQuery = true)
-    List<VoucherEntity> getAllVoucherByUser(String userId,String stayId);
+    @Query(value = "select v.* from voucher v inner join user_voucher uv on v.id = uv.voucher_id where v.room_id = ?2 and uv.user_id = ?1 and v.expire_at > ?3", nativeQuery = true)
+    List<VoucherEntity> getAllVoucherByUser(String userId, String roomId, LocalDateTime localDateTime);
+
+    @Query(value = "Select voucher.* from voucher inner join rooms on voucher.room_id = rooms.id where rooms.stay_id= ?1 and voucher.is_hidden = false and expire_at > ?2", nativeQuery = true)
+    List<VoucherEntity> getAllVoucherByStay(String stayId, LocalDateTime localDateTime);
+
 }

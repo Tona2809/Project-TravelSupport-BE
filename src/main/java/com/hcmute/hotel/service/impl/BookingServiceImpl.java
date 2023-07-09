@@ -28,14 +28,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public boolean checkinValidate(String stayId, LocalDateTime checkinDate) {
-        List<BookingEntity> list = bookingRepository.checkinValidate(stayId,checkinDate);
+    public boolean checkinValidate(String stayId, LocalDateTime checkinDate, String userId) {
+        List<BookingEntity> list = bookingRepository.checkinValidate(stayId,checkinDate,userId);
         return list.isEmpty();
     }
 
     @Override
-    public boolean checkoutValidate(String stayId, LocalDateTime checkinDate, LocalDateTime checkoutDate) {
-        List<BookingEntity> list = bookingRepository.checkoutValidate(stayId,checkinDate,checkoutDate);
+    public boolean checkoutValidate(String stayId, LocalDateTime checkinDate, LocalDateTime checkoutDate, String userId) {
+        List<BookingEntity> list = bookingRepository.checkoutValidate(stayId,checkinDate,checkoutDate, userId);
         return list.isEmpty();
     }
 
@@ -64,8 +64,18 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingEntity> getBookingByOwner(UserEntity userId) {
-        List<BookingEntity> list = bookingRepository.getAllByStay_Host(userId);
+    public void setCompletedBooking(String bookingId) {
+        BookingEntity booking = findBookingById(bookingId);
+        if (booking!=null && booking.getStatus()==4)
+        {
+            booking.setStatus(5);
+            bookingRepository.save(booking);
+        }
+    }
+
+    @Override
+    public List<BookingEntity> getBookingByOwner(UserEntity userId, String searchKey) {
+        List<BookingEntity> list = bookingRepository.getAllByStay_Host(userId.getId(),searchKey);
         return list;
     }
 
@@ -73,5 +83,10 @@ public class BookingServiceImpl implements BookingService {
     public BookingEntity getByPaymentId(String paymentId) {
         Optional<BookingEntity> bookingEntity = bookingRepository.getByPaymentId(paymentId);
         return bookingEntity.isEmpty() ? null : bookingEntity.get();
+    }
+
+    @Override
+    public void deleteBookingById(String bookingId) {
+        bookingRepository.deleteById(bookingId);
     }
 }

@@ -22,8 +22,8 @@ public class VnpayConfig {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static String vnp_returnUrl = "http://localhost:3000/api/booking/pay/success";
-    public static String vnp_TmnCode = "CHNV2GTJ";
-    public static String vnp_HashSecret = "DEEBMGFXZXGXBWQRUOEFALLNZNSMZNAA";
+    public static String vnp_TmnCode = "TS40JH3V";
+    public static String vnp_HashSecret = "KAEBZFYOJIUEMQBXNUMUOUWXTIMLLYYS";
     public static String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
     public static String md5(String message) {

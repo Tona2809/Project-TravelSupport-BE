@@ -19,14 +19,27 @@ public class VnpayService {
     public Map<String,Object> createPayment(BookingEntity booking, HttpServletRequest req) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
-//        String orderType = req.getParameter("ordertype");
-//        String bankCode = req.getParameter("bankCode");
-        long amount = booking.getTotalPrice()*100;
-        String orderType = "250000";
+        long amount = booking.getTotalPrice()* 100L;
+        String orderType = "topup";
 
         String vnp_TxnRef = vnpayConfig.getRandomNumber(8);
-        String vnp_TmnCode = vnpayConfig.vnp_TmnCode;
+        String vnp_TmnCode = VnpayConfig.vnp_TmnCode;
 
+        return getStringObjectMap(vnp_Version, vnp_Command, amount, orderType, vnp_TxnRef, vnp_TmnCode);
+    }
+
+    public Map<String,Object> createPayment(BookingEntity booking, HttpServletRequest req, String vnp_TxnRef) throws UnsupportedEncodingException {
+        String vnp_Version = "2.1.0";
+        String vnp_Command = "pay";
+        long amount = booking.getTotalPrice()* 100L;
+        String orderType = "topup";
+
+        String vnp_TmnCode = VnpayConfig.vnp_TmnCode;
+
+        return getStringObjectMap(vnp_Version, vnp_Command, amount, orderType, vnp_TxnRef, vnp_TmnCode);
+    }
+
+    private Map<String, Object> getStringObjectMap(String vnp_Version, String vnp_Command, long amount, String orderType, String vnp_TxnRef, String vnp_TmnCode) throws UnsupportedEncodingException {
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
@@ -39,6 +52,8 @@ public class VnpayService {
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_ReturnUrl", vnpayConfig.vnp_returnUrl);
+        vnp_Params.put("vnp_IpAddr", "116.110.43.200");
+        vnp_Params.put("vnp_Locale", "vn");
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -81,4 +96,6 @@ public class VnpayService {
         map.put("paymentId",vnp_TxnRef);
         return map;
     }
+
+
 }

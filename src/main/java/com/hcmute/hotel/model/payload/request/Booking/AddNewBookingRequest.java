@@ -18,7 +18,7 @@ import java.util.Map;
 public class AddNewBookingRequest {
     private String stayId;
     private Map<String,Integer> roomList;
-    private String voucherId;
+    private String[] voucherId;
     private LocalDateTime checkinDate;
     private LocalDateTime checkoutDate;
     @NotNull(message = "Total people can't be null")

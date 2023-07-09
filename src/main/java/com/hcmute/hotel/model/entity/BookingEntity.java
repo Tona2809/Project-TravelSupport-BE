@@ -40,7 +40,7 @@ public class BookingEntity {
     @JoinColumn(name = "\"user_id\"")
     private UserEntity user;
 
-    @OneToMany(mappedBy = "booking", targetEntity = BookingRoomEntity.class)
+    @OneToMany(mappedBy = "booking", targetEntity = BookingRoomEntity.class, cascade = CascadeType.ALL)
     private Set<BookingRoomEntity> bookingRoom;
 
     public Set<BookingRoomEntity> getBookingRoom() {
@@ -67,6 +67,33 @@ public class BookingEntity {
 
     @Column(name = "\"payment_id\"")
     private String paymentId;
+
+    @Column(name = "\"expired_payment_time\"")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    @ApiModelProperty(required = true, example = "2021-08-20T00:00:00")
+    private LocalDateTime expiredPaymentTime;
+
+    @Column(name = "\"expired_confirm_time\"")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    @ApiModelProperty(required = true, example = "2021-08-20T00:00:00")
+    private LocalDateTime expiredConfirmTime;
+
+
+    public LocalDateTime getExpiredPaymentTime() {
+        return expiredPaymentTime;
+    }
+
+    public void setExpiredPaymentTime(LocalDateTime expiredPaymentTime) {
+        this.expiredPaymentTime = expiredPaymentTime;
+    }
+
+    public LocalDateTime getExpiredConfirmTime() {
+        return expiredConfirmTime;
+    }
+
+    public void setExpiredConfirmTime(LocalDateTime expiredConfirmTime) {
+        this.expiredConfirmTime = expiredConfirmTime;
+    }
 
     public String getPaymentId() {
         return paymentId;
