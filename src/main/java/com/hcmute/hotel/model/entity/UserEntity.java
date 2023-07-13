@@ -74,6 +74,18 @@ public class UserEntity {
     @JsonIgnore
     private Set<BookingEntity> bookingEntities;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "author", targetEntity = PlaceEntity.class)
+    @JsonIgnore
+    private Set<PlaceEntity> places;
+
+    public Set<PlaceEntity> getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(Set<PlaceEntity> places) {
+        this.places = places;
+    }
+
     public Set<BookingEntity> getBookingEntities() {
         return bookingEntities;
     }

@@ -502,4 +502,49 @@ public class StayController {
         return new ResponseEntity<>(pagingResponse ,HttpStatus.OK);
     }
 
+    @GetMapping("/owner/static")
+    @ApiOperation("Owner stay static")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
+    public ResponseEntity<Object> ownerStayStatic(HttpServletRequest req)
+    {
+        UserEntity user;
+        try
+        {
+            user = authenticateHandler.authenticateUser(req);
+            List<StayEntity> listStay = stayService.getStayByUser(user);
+            Map<String, Object> result = new HashMap<>();
+            result.put("totalStay", listStay.size());
+            int numberStayHaveRoom = 0, totalRoom = 0, totalRating = 0;
+            Map<String, Integer> provinceStayCount = new HashMap<>();
+            Map<String, Integer> roomStayCount = new HashMap<>();
+            Map<String, Integer> stayRatingCount = new HashMap<>();
+            Map<String, Integer> stayTypeCount = new HashMap<>();
+            for (StayEntity stay: listStay)
+            {
+                if (stay.getRoom()!= null && stay.getRoom().size()>0)
+                {
+                    numberStayHaveRoom+=1;
+                    totalRoom+=stay.getRoom().size();
+                    roomStayCount.put(stay.getName(), stay.getRoom().size());
+                }
+                provinceStayCount.merge(stay.getProvince().getName(), 1, Integer::sum);
+                stayTypeCount.merge(stay.getType(),1,Integer::sum);
+                if (stay.getStayRating()!=null && stay.getStayRating().size()>0)
+                {
+                    totalRating+=stay.getStayRating().size();
+                    stayRatingCount.put(stay.getName(),stay.getStayRating().size());
+                }
+            }
+            result.put("stayHaveRoom",numberStayHaveRoom);
+            result.put("totalRoom", totalRoom);
+            result.put("totalRating", totalRating);
+            result.put("provinceStay",provinceStayCount);
+            result.put("roomStay",roomStayCount);
+            result.put("stayRating", stayRatingCount);
+            result.put("stayType", stayTypeCount);
+            return new ResponseEntity<>(result,HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
 }

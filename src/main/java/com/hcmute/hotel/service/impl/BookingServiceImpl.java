@@ -11,9 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 @Transactional
@@ -88,5 +91,48 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void deleteBookingById(String bookingId) {
         bookingRepository.deleteById(bookingId);
+    }
+
+    @Override
+    public Map<LocalDate, Integer> getOwnerMonthlyRevenue(String hostName) {
+        List<Object> objects = bookingRepository.getRevenueLastMonth(hostName);
+        Map<LocalDate, Integer> monthMap = new LinkedHashMap<>();
+
+        for (Object obj : objects) {
+            Object[] row = (Object[]) obj;
+            BigDecimal countBigDecimal = (BigDecimal) row[1];
+            if (countBigDecimal == null)
+            {
+                countBigDecimal= BigDecimal.valueOf(0);
+            }
+            Date roomId = (Date) row[0];
+            String date = roomId.toString();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate localDate = LocalDate.parse(date, formatter);
+            Integer count = countBigDecimal.intValue();
+
+            monthMap.put(localDate, count);
+        }
+        return monthMap;
+    }
+
+    @Override
+    public Map<String, Integer> getStayRevenueByOwner(String userId) {
+        List<Object> objects = bookingRepository.getRevenueOfStayByOwner(userId);
+        Map<String, Integer> result = new HashMap<>();
+
+        for (Object obj : objects) {
+            Object[] row = (Object[]) obj;
+            BigDecimal countBigDecimal = (BigDecimal) row[1];
+            if (countBigDecimal == null)
+            {
+                countBigDecimal= BigDecimal.valueOf(0);
+            }
+            String roomName = (String) row[0];
+            Integer count = countBigDecimal.intValue();
+
+            result.put(roomName, count);
+        }
+        return result;
     }
 }

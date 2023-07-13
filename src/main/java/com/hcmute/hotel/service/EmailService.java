@@ -25,4 +25,6 @@ public interface EmailService {
     void sendOwnerBookingConfirmation(BookingEntity booking, String ownerName) throws MessagingException, UnsupportedEncodingException;
 
     void sendUserDeclineBookingEmail(BookingEntity booking, String reason) throws MessagingException, UnsupportedEncodingException;
+
+    void sendForgotPasswordEmail(UserEntity user) throws MessagingException, UnsupportedEncodingException;
 }

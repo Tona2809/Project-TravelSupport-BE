@@ -56,6 +56,20 @@ public class PlaceEntity {
     @Column(name = "\"recommend_time\"")
     private String recommendTime;
 
+    @ManyToOne()
+    @JoinColumn(name = "\"author\"")
+    public UserEntity author;
+
+    @Column(name = "\"\"")
+
+    public UserEntity getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(UserEntity author) {
+        this.author = author;
+    }
+
     public String getAddressDescription() {
         return addressDescription;
     }

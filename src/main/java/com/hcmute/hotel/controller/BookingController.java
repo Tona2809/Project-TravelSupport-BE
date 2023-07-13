@@ -37,10 +37,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.hcmute.hotel.controller.StayController.*;
 
@@ -494,4 +491,32 @@ public class BookingController {
         return new ResponseEntity<>(responseList,HttpStatus.OK);
     }
 
+    @GetMapping("/static")
+    @ApiOperation("Get Monthly Revenue")
+    @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_OWNER')")
+    public ResponseEntity<Object> getMonthlyRevenue(HttpServletRequest req)
+    {
+        UserEntity user;
+        try
+        {
+            Map<String, Object> result = new HashMap<>();
+            user = authenticateHandler.authenticateUser(req);
+            Map<String,Integer> stayRevenueMap = bookingService.getStayRevenueByOwner(user.getId());
+            Map<LocalDate, Integer> dateRevenueMap = bookingService.getOwnerMonthlyRevenue(user.getId());
+            List<BookingEntity> list = bookingService.getBookingByOwner(user,null);
+            int totalEarning = 0;
+            for (BookingEntity booking: list)
+            {
+                totalEarning += booking.getTotalPrice();
+            }
+            result.put("totalBookingRequest",list.size());
+            result.put("stayRevenue",stayRevenueMap);
+            result.put("dateRevenue", dateRevenueMap);
+            result.put("totalEarning", totalEarning);
+            return new ResponseEntity<>(result,HttpStatus.OK);
+        }
+        catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401, "UNAUTHORIZED", "Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
 }

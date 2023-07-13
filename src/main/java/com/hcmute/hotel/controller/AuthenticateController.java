@@ -43,9 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static com.hcmute.hotel.controller.StayController.E400;
@@ -297,5 +295,46 @@ public class AuthenticateController {
             }
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    @PostMapping("/resetPasswordRequest")
+    @ApiOperation("Reset Password Request")
+    public ResponseEntity<Object> resetPasswordRequest(@RequestParam("email") String email) throws MessagingException, UnsupportedEncodingException {
+        UserEntity user = userService.findByEmail(email);
+        if (user == null || !user.isEnabled())
+        {
+            return new ResponseEntity<>(new ErrorResponse(E404, "EMAIL_NOT_FOUND","Không tìm thấy tài khoản với email vừa nhập"), HttpStatus.NOT_FOUND);
+        }
+        Random random = new Random();
+        int verificationCode = random.nextInt(1000000);
+        String formattedCode = String.format("%06d", verificationCode);
+        user.setVerificationCode(formattedCode);
+        user = userService.save(user);
+        emailService.sendForgotPasswordEmail(user);
+        return new ResponseEntity<>(user.getEmail(),HttpStatus.OK);
+    }
+
+    @PostMapping("/resetPassword")
+    @ApiOperation("Reset Password")
+    public ResponseEntity<Object> resetPassword(@RequestParam("email") String email,
+                                                @RequestParam("newPassword") String newPassword,
+                                                @RequestParam("verifyCode") String verifyCode)
+    {
+        UserEntity user = userService.findByEmail(email);
+        if (user == null)
+        {
+            return new ResponseEntity<>(new ErrorResponse(E404, "EMAIL_NOT_FOUND","Không tìm thấy tài khoản với email vừa nhập"), HttpStatus.NOT_FOUND);
+        }
+        if (user.getVerificationCode() == null && !user.isEnabled())
+        {
+            return new ResponseEntity<>(new ErrorResponse(E404, "ACCOUNT_NOT_ACTIVE","Mã xác nhận không chính xác hoặc tài khoản chưa kích hoạt"), HttpStatus.BAD_REQUEST);
+        }
+        if (!Objects.equals(verifyCode, user.getVerificationCode()))
+        {
+            return new ResponseEntity<>(new ErrorResponse(E404, "INVALID_VERIFY_CODE","Mã xác nhận không chính xác"), HttpStatus.BAD_REQUEST);
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userService.save(user);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 }

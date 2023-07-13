@@ -56,7 +56,6 @@ public class EmailServiceImpl implements EmailService {
         content = content.replace("[[URL]]", verifyURL);
         helper.setText(content, true);
         emailSender.send(message);
-
     }
 
     @Override
@@ -203,5 +202,25 @@ public class EmailServiceImpl implements EmailService {
         emailSender.send(message);
     }
 
-
+    @Override
+    public void sendForgotPasswordEmail(UserEntity user)
+            throws MessagingException, UnsupportedEncodingException
+    {
+        String toAddress =user.getEmail();
+        String senderName="UTETravel";
+        String subject = "Reset Password Request";
+        String content = "We have receive your reset password request,<br>"
+                + "Please using the code below to reset your password:<br>"
+                + "<b>[[resetCode]]</b><br>"
+                + "Thank you,<br>"
+                + "UTETravel.";
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        helper.setFrom("managementsitetrack@gmail.com",senderName);
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+        content = content.replace("[[resetCode]]", user.getVerificationCode());
+        helper.setText(content, true);
+        emailSender.send(message);
+    }
 }

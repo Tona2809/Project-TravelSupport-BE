@@ -7,8 +7,11 @@ import com.hcmute.hotel.model.entity.UserEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Component
@@ -27,4 +30,8 @@ public interface BookingService {
     BookingEntity getByPaymentId(String paymentId);
 
     void deleteBookingById(String bookingId);
+
+    Map<LocalDate, Integer> getOwnerMonthlyRevenue(String hostName);
+
+    Map<String, Integer> getStayRevenueByOwner(String userId);
 }

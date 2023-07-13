@@ -73,7 +73,7 @@ public class PlaceController {
         UserEntity user;
         try
         {
-            authenticateHandler.authenticateUser(req);
+            user = authenticateHandler.authenticateUser(req);
             PlaceEntity place = new PlaceEntity();
             place.setName(placeName);
             place.setHidden(false);
@@ -84,6 +84,7 @@ public class PlaceController {
             place.setTimeClose(timeClose);
             place.setTimeOpen(timeOpen);
             place.setType(type);
+            place.setAuthor(user);
             place.setMinPrice(Integer.parseInt(minPrice));
             place.setMaxPrice(Integer.parseInt(maxPrice));
             place.setRecommendTime(recommendTime);
@@ -135,6 +136,10 @@ public class PlaceController {
         {
             user = authenticateHandler.authenticateUser(req);
             PlaceEntity place = placeService.getPlaceById(placeId);
+            if (place==null || place.getAuthor()!= user)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E400, "INVALID_PLACE_OR_USER", "Địa điểm không tồn tại hoặc bạn không có quyền sửa"), HttpStatus.BAD_REQUEST);
+            }
             place.setName(placeName);
             place.setDescription(description);
             place.setAddressDescription(addressDescription);
@@ -206,8 +211,10 @@ public class PlaceController {
                     index = i;
                 }
             }
-            String formattedValue = String.format("%.2f", max);
-            map.put(list.get(index).getId(),Double.parseDouble(formattedValue));
+            double rootDistance = DistanceCalculator.calculateDistance(list.get(index).getLatitude(),list.get(index).getLongitude(),stay.getLatitude(),stay.getLongitude());
+            String formattedRootDistance = String.format("%.2f", rootDistance);
+            map.put(list.get(index).getId(),Double.parseDouble(formattedRootDistance));
+            target = list.get(index);
             list.remove(index);
             count--;
         }
@@ -254,12 +261,38 @@ public class PlaceController {
         target.setLatitude(stay.getLatitude());
         target.setLongitude(stay.getLongitude());
         Map<String,Double> result = new LinkedHashMap<>();
-        for (PlaceEntity place : list)
-        {
-            double distance = DistanceCalculator.calculateDistance(target.getLatitude(),target.getLongitude(),place.getLatitude(),place.getLongitude());
-            String formattedValue = String.format("%.2f", distance);
-            result.put(place.getId(),Double.parseDouble(formattedValue));
+        if (list.size()>0) {
+            while (list.size() > 1) {
+                double max = Double.MAX_VALUE;
+                int index = 0;
+                for (int i = 0; i < list.size(); i++) {
+                    double distance = DistanceCalculator.calculateDistance(target.getLatitude(), target.getLongitude(), list.get(i).getLatitude(), list.get(i).getLongitude());
+                    if (distance < max) {
+                        max = distance;
+                        index = i;
+                    }
+                }
+                double rootDistance = DistanceCalculator.calculateDistance(list.get(index).getLatitude(), list.get(index).getLongitude(), stay.getLatitude(), stay.getLongitude());
+                String formattedRootDistance = String.format("%.2f", rootDistance);
+                result.put(list.get(index).getId(), Double.parseDouble(formattedRootDistance));
+                target = list.get(index);
+                list.remove(index);
+            }
+            double rootDistance = DistanceCalculator.calculateDistance(list.get(0).getLatitude(), list.get(0).getLongitude(), stay.getLatitude(), stay.getLongitude());
+            String formattedRootDistance = String.format("%.2f", rootDistance);
+            result.put(list.get(0).getId(),Double.parseDouble(formattedRootDistance));
         }
         return new ResponseEntity<>(result,HttpStatus.OK);
+    }
+    @GetMapping("/{placeId}")
+    @ApiOperation("Get Place By id")
+    public ResponseEntity<Object> getPlaceById(@PathVariable("placeId") String placeId)
+    {
+        PlaceEntity place = placeService.getPlaceById(placeId);
+        if (place == null)
+        {
+            return new ResponseEntity<>(new ErrorResponse(E404,"PLACE_NOT_FOUND","Không tìm thấy địa điểm"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(place,HttpStatus.OK);
     }
 }
