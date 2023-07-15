@@ -10,10 +10,7 @@ import com.hcmute.hotel.model.payload.request.StayRating.AddNewStayRatingRequest
 import com.hcmute.hotel.model.payload.request.StayRating.UpdateStayRatingRequest;
 import com.hcmute.hotel.model.payload.response.ErrorResponse;
 import com.hcmute.hotel.security.JWT.JwtUtils;
-import com.hcmute.hotel.service.BookingService;
-import com.hcmute.hotel.service.StayRatingService;
-import com.hcmute.hotel.service.StayService;
-import com.hcmute.hotel.service.UserService;
+import com.hcmute.hotel.service.*;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +23,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -44,6 +43,8 @@ public class StayRatingController {
 
     private final BookingService bookingService;
     private final StayService stayService;
+
+    private final EmailService emailService;
     static String E401="Unauthorized";
     static String E404="Not Found";
     static String E400="Bad Request";
@@ -149,6 +150,42 @@ public class StayRatingController {
             return new ResponseEntity<>(HttpStatus.OK);
         }catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @GetMapping("/search")
+    @ApiOperation("Get Owner stay comment")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<Object> getOwnerStayComment(HttpServletRequest req, @RequestParam("stayId") String stayId)
+    {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            List<StayRatingEntity> list = stayRatingService.searchRating(user.getId(), stayId);
+            return new ResponseEntity<>(list,HttpStatus.OK);
+        }catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @PostMapping("/reportRating")
+    @ApiOperation("Report Rating")
+    public ResponseEntity<Object> reportRating(HttpServletRequest req, @RequestParam("ratingId") String ratingId)
+    {
+        UserEntity user;
+        try {
+            user = authenticateHandler.authenticateUser(req);
+            StayRatingEntity rating = stayRatingService.getStayRatingById(ratingId);
+            if (rating==null || rating.getStay().getHost()!= user)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_STAY_RATING_OWNER","This is not your Stay"),HttpStatus.BAD_REQUEST);
+            }
+            emailService.reportRating(rating);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
     }
 

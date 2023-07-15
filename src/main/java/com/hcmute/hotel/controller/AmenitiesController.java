@@ -35,6 +35,11 @@ public class AmenitiesController {
     private final AmenitiesService amenitiesService;
     @Autowired
     AuthenticateHandler authenticateHandler;
+
+    public void setAuthenticateHandler(AuthenticateHandler authenticateHandler) {
+        this.authenticateHandler = authenticateHandler;
+    }
+
     @PostMapping(value = "",consumes = {"multipart/form-data"})
     @ApiOperation("Create")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -74,7 +79,6 @@ public class AmenitiesController {
     public ResponseEntity<Object> getAllAmenities()
     {
         List<AmenitiesEntity> listAmenities = amenitiesService.getAllAmenities();
-        System.out.println(E404);
         Map<String,Object> map = new HashMap<>();
         map.put("content",listAmenities);
         return new ResponseEntity<>( map,HttpStatus.OK);

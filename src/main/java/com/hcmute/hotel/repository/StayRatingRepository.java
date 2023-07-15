@@ -16,4 +16,7 @@ public interface StayRatingRepository extends JpaRepository<StayRatingEntity,Str
     @Query(value = "SELECT * From stay_rating order by created_at desc",nativeQuery = true)
     List<StayRatingEntity> getAllStayRating();
     List<StayRatingEntity> findByStay(StayEntity stay);
+
+    @Query(value = "SELECT sr.* From stay_rating sr inner join stays s on sr.stay_id=s.id where sr.created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) and s.host = ?1 and sr.stay_id=?2 order by stay_id, sr.created_at desc",nativeQuery = true)
+    List<StayRatingEntity> searchRating(String userId, String stayId);
 }

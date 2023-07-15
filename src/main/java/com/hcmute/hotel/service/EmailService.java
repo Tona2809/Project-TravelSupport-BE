@@ -1,6 +1,7 @@
 package com.hcmute.hotel.service;
 
 import com.hcmute.hotel.model.entity.BookingEntity;
+import com.hcmute.hotel.model.entity.StayRatingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -27,4 +28,6 @@ public interface EmailService {
     void sendUserDeclineBookingEmail(BookingEntity booking, String reason) throws MessagingException, UnsupportedEncodingException;
 
     void sendForgotPasswordEmail(UserEntity user) throws MessagingException, UnsupportedEncodingException;
+
+    void reportRating(StayRatingEntity rating) throws MessagingException, UnsupportedEncodingException;
 }

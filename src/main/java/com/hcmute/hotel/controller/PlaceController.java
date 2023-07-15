@@ -291,7 +291,7 @@ public class PlaceController {
         PlaceEntity place = placeService.getPlaceById(placeId);
         if (place == null)
         {
-            return new ResponseEntity<>(new ErrorResponse(E404,"PLACE_NOT_FOUND","Không tìm thấy địa điểm"), HttpStatus.OK);
+            return new ResponseEntity<>(new ErrorResponse(E404,"PLACE_NOT_FOUND","Không tìm thấy địa điểm"), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(place,HttpStatus.OK);
     }

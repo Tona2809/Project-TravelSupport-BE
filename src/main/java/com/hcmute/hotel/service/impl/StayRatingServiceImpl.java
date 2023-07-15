@@ -62,4 +62,9 @@ public class StayRatingServiceImpl implements StayRatingService {
         List<StayRatingEntity> listStayRating =stayRatingRepository.findByStay(stay);
         return listStayRating;
     }
+
+    @Override
+    public List<StayRatingEntity> searchRating(String userId, String stayId) {
+        return stayRatingRepository.searchRating(userId,stayId);
+    }
 }

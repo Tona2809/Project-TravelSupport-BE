@@ -1,6 +1,7 @@
 package com.hcmute.hotel.service.impl;
 
 import com.hcmute.hotel.model.entity.BookingEntity;
+import com.hcmute.hotel.model.entity.StayRatingEntity;
 import com.hcmute.hotel.model.entity.UserEntity;
 import com.hcmute.hotel.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -220,6 +221,28 @@ public class EmailServiceImpl implements EmailService {
         helper.setTo(toAddress);
         helper.setSubject(subject);
         content = content.replace("[[resetCode]]", user.getVerificationCode());
+        helper.setText(content, true);
+        emailSender.send(message);
+    }
+
+    @Override
+    public void reportRating(StayRatingEntity rating) throws MessagingException, UnsupportedEncodingException {
+        String toAddress ="managementsitetrack@gmail.com";
+        String senderName="UTETravel";
+        String subject = "Report comment from [[reporter]]";
+        String content = "There an violent comment from [[commenter]]:,<br>"
+                + "Message: [[message]]<br>"
+                + "Please consider this comment and give [[commenter]] an temporary suspended<br>"
+                + "Thank you,<br>"
+                + "UTETravel.";
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        helper.setFrom(rating.getStay().getHost().getEmail(),senderName);
+        helper.setTo(toAddress);
+        subject = subject.replace("[[reporter]]", rating.getStay().getHost().getFullName());
+        helper.setSubject(subject);
+        content = content.replace("[[commenter]]", rating.getUserRating().getFullName());
+        content = content.replace("[[message]]", rating.getMessage());
         helper.setText(content, true);
         emailSender.send(message);
     }

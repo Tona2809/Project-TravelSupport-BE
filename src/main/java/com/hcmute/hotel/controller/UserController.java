@@ -45,8 +45,8 @@ public class UserController {
     private final UserService userService;
     private final AuthenticateHandler authenticateHandler;
     private final EmailService emailService;
-    @Autowired
-    JwtUtils jwtUtils;
+
+    private final JwtUtils jwtUtils;
 
     @GetMapping("/search")
     @ApiOperation("Search by Criteria")

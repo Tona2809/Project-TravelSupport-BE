@@ -50,8 +50,7 @@ public class RoomController {
     static String E400="Bad Request";
 
 
-    @Autowired
-    JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
     @PostMapping("")
     @ApiOperation("Create")
@@ -67,7 +66,7 @@ public class RoomController {
             }
             RoomEntity room = RoomMapping.addToEntity(addNewRoomRequest);
             room.setStay(stay);
-            roomService.addRoom(room);
+            room = roomService.addRoom(room);
             return new ResponseEntity<>(room, HttpStatus.OK);
         }
         catch (BadCredentialsException e) {

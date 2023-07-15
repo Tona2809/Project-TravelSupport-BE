@@ -17,5 +17,7 @@ public interface StayRatingService {
     public List<StayRatingEntity> getAllStayRating();
     StayRatingEntity getStayRatingById(String id);
     void deleteById(String id);
-    public List<StayRatingEntity> getStayRatingByStayId(String id);
+    List<StayRatingEntity> getStayRatingByStayId(String id);
+
+    List<StayRatingEntity> searchRating(String userId, String stayId);
 }

@@ -40,8 +40,8 @@ import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 public class ProvinceController {
     private final ProvinceService provinceService;
 
-    @Autowired
-    JwtUtils jwtUtils;
+
+    private final JwtUtils jwtUtils;
 
     @GetMapping("")
     @ApiOperation("Find all")

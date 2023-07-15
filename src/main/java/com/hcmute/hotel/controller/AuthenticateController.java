@@ -60,6 +60,15 @@ public class AuthenticateController {
     AuthenticationManager authenticationManager;
     @Autowired
     JwtUtils jwtUtils;
+
+    public void setJwtUtils(JwtUtils jwtUtils) {
+        this.jwtUtils = jwtUtils;
+    }
+
+    public void setAuthenticationManager(AuthenticationManager authenticationManager)
+    {
+        this.authenticationManager = authenticationManager;
+    }
     static String E404 = "Not Found";
 
     static String E422 = "Unprocessable Entity";

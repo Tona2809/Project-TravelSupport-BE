@@ -56,8 +56,9 @@ import java.util.*;
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class StayController {
-    @Autowired
-    AuthenticateHandler authenticateHandler;
+
+    private final AuthenticateHandler authenticateHandler;
+
     private final BookingService bookingService;
     private final StayService stayService;
     private final AmenitiesService amenitiesService;
@@ -259,7 +260,32 @@ public class StayController {
             }
         } catch (BadCredentialsException e) {
                     return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
+        }
+    }
 
+    @DeleteMapping("/{stayId}")
+    @ApiOperation("Soft delete hotel")
+    @PreAuthorize("hasRole('ROLE_OWNER')")
+    public ResponseEntity<Object> softDeleteStay(@PathVariable("stayId") String stayId, HttpServletRequest req)
+    {
+        UserEntity user;
+        try
+        {
+            user = authenticateHandler.authenticateUser(req);
+            StayEntity stay = stayService.getStayById(stayId);
+            if (stay==null)
+            {
+                return new ResponseEntity<>(new ErrorResponse(E404,"STAY_NOT_FOUND","Can't find Stay with id provided"),HttpStatus.NOT_FOUND);
+            }
+            else if (user!=stay.getHost())
+            {
+                return new ResponseEntity<>(new ErrorResponse(E400,"INVALID_STAY_OWNER","You are not stay owner"),HttpStatus.BAD_REQUEST);
+            }
+            stay.setHidden(!stay.isHidden());
+            stay = stayService.saveStay(stay);
+            return new ResponseEntity<>(stay,HttpStatus.OK);
+        }catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(E401,"UNAUTHORIZED","Unauthorized, please login again"), HttpStatus.UNAUTHORIZED);
         }
     }
 //    @DeleteMapping("/{id}")
@@ -485,7 +511,7 @@ public class StayController {
         {
            isEmpty = "Not null";
         }
-        Page<StayEntity> stayPage = stayService.searchByCriteria(provinceId,minPrice,maxPrice,checkInDate,checkOutDate,status.getName(),hidden,maxPeople,searchKey,page,size,sort.getName(),order.getName(),isEmpty,amenitiesId);
+        Page<StayEntity> stayPage = stayService.searchByCriteria(provinceId,minPrice,maxPrice,checkInDate,checkOutDate,status.getName(),false,maxPeople,searchKey,page,size,sort.getName(),order.getName(),isEmpty,amenitiesId);
         List<StayEntity> listStay = stayPage.toList();
         PagingResponse pagingResponse = new PagingResponse();
         List<Object> Result = Arrays.asList(listStay.toArray());
