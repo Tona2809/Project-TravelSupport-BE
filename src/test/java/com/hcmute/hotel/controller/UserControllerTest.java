@@ -51,7 +51,7 @@ class UserControllerTest {
 
     @Test
     void testAddUserInfo_ValidRequestWithImage_ReturnsUserEntity() throws FileNotImageException {
-        // Arrange
+        
         UserEntity authenticatedUser = new UserEntity();
         authenticatedUser.setId(String.valueOf(1L));
         authenticatedUser.setEmail("testuser@Gmail.com");
@@ -68,17 +68,17 @@ class UserControllerTest {
         when(authenticateHandler.authenticateUser(request)).thenReturn(authenticatedUser);
         when(userService.addUserImage(file, authenticatedUser)).thenReturn(authenticatedUser);
 
-        // Act
+        
         ResponseEntity<Object> response = userController.addUserInfo(addUserInfoRequest, "Male", file, request);
 
-        // Assert
+        
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(authenticatedUser, response.getBody());
     }
 
     @Test
     void testAddUserInfo_ValidRequestWithoutImage_ReturnsUserEntity() throws FileNotImageException {
-        // Arrange
+        
         UserEntity authenticatedUser = new UserEntity();
         authenticatedUser.setId(String.valueOf(1L));
         authenticatedUser.setEmail("testuser@gmail.com");
@@ -92,17 +92,17 @@ class UserControllerTest {
 
         when(authenticateHandler.authenticateUser(request)).thenReturn(authenticatedUser);
 
-        // Act
+        
         ResponseEntity<Object> response = userController.addUserInfo(addUserInfoRequest, "Male", null, request);
 
-        // Assert
+        
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(authenticatedUser, response.getBody());
     }
 
     @Test
     void testAddUserInfo_UnauthorizedRequest_ReturnsErrorResponse() throws FileNotImageException {
-        // Arrange
+        
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer token");
 
@@ -112,10 +112,10 @@ class UserControllerTest {
         addUserInfoRequest.setFullName("John Doe");
         addUserInfoRequest.setPhone("123456789");
 
-        // Act
+        
         ResponseEntity<Object> response = userController.addUserInfo(addUserInfoRequest, "Male", null, request);
 
-        // Assert
+        
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         ErrorResponse expectedErrorResponse = new ErrorResponse("Unauthorized", "UNAUTHORIZED", "Unauthorized, please login again");
         assertEquals(expectedErrorResponse, response.getBody());
