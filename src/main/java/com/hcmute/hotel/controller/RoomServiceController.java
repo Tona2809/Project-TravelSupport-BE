@@ -158,6 +158,10 @@ public class RoomServiceController {
                 return new ResponseEntity<>(messageResponse, HttpStatus.NOT_FOUND);
             }
             else {
+                for (RoomEntity room : roomService.getRoom())
+                {
+                    room.getRoomService().remove(roomService);
+                }
                     roomServiceService.deleteById(roomService.getId());
                     return new ResponseEntity<>(HttpStatus.OK);
                 }

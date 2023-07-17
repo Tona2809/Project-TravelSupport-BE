@@ -1,10 +1,12 @@
 package com.hcmute.hotel.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @RestResource(exported = false)
 @Entity
@@ -23,8 +25,17 @@ public class RoomServiceEntity {
     @Column(name = "\"room_service_name\"")
     private String roomServiceName;
 
+    @ManyToMany(mappedBy = "roomService")
+    @JsonIgnore
+    Set<RoomEntity> room;
 
+    public Set<RoomEntity> getRoom() {
+        return room;
+    }
 
+    public void setRoom(Set<RoomEntity> room) {
+        this.room = room;
+    }
 
     public String getId() {
         return id;

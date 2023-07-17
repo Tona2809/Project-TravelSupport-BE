@@ -46,6 +46,7 @@ public class AmenitiesController {
     public ResponseEntity<Object> addNewAmenities(@RequestParam String name, HttpServletRequest req, @RequestPart MultipartFile file)
     {
         UserEntity user;
+
         try
         {
             user = authenticateHandler.authenticateUser(req);

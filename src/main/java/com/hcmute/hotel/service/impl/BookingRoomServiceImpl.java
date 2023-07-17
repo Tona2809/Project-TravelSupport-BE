@@ -31,4 +31,9 @@ public class BookingRoomServiceImpl implements BookingRoomService {
         Optional<BookingRoomEntity> bookingRoom = bookingRoomRepository.findById(bookingRoomId);
         return bookingRoom.isEmpty() ? null : bookingRoom.get();
     }
+
+    @Override
+    public List<BookingRoomEntity> getAllByRoomId(String roomId) {
+        return bookingRoomRepository.getAllByRoomId(roomId);
+    }
 }

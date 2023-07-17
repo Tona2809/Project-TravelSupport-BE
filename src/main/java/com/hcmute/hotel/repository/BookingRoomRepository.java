@@ -8,5 +8,6 @@ import java.util.List;
 public interface BookingRoomRepository extends JpaRepository<BookingRoomEntity,String> {
 
     List<BookingRoomEntity> getAllByBookingId(String bookingId);
+    List<BookingRoomEntity> getAllByRoomId(String roomId);
 
 }

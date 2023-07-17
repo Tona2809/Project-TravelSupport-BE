@@ -220,6 +220,31 @@ public class PlaceController {
         }
         return new ResponseEntity<>(map,HttpStatus.OK);
     }
+
+    @GetMapping("/nearByPlace")
+    @ApiOperation("Get Near By Place")
+    public ResponseEntity<Object> getNearByPlace(
+            @RequestParam("stayId") String stayId,
+            @RequestParam(required = false, value = "searchKey") String searchKey)
+    {
+        StayEntity stay = stayService.getStayById(stayId);
+        List<PlaceEntity> list = placeService.searchPlace(searchKey,stay.getLatitude(),stay.getLongitude(), null);
+        PlaceEntity target = new PlaceEntity();
+        target.setLatitude(stay.getLatitude());
+        target.setLongitude(stay.getLongitude());
+        Random random = new Random();
+        int count = 4;
+        List<PlaceEntity> result = new ArrayList<>();
+        while (!list.isEmpty() && count>0)
+        {
+            int randomIndex = random.nextInt(list.size());
+            PlaceEntity place = list.get(randomIndex);
+            result.add(place);
+            list.remove(place);
+            count--;
+        }
+        return new ResponseEntity<>(result,HttpStatus.OK);
+    }
     @GetMapping("/getDistance")
     @ApiOperation("Caculate the distance")
     public ResponseEntity<Object> getDistance(@RequestParam("lat1") double lat1,
