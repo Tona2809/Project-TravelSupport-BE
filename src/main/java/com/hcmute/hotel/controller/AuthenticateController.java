@@ -273,6 +273,7 @@ public class AuthenticateController {
             return new ResponseEntity<>(new ErrorResponse(E400, "ACCOUNT_HAVE_BEEN_ACTIVE", "Account has been active"), HttpStatus.BAD_REQUEST);
         } else {
             user.setEnabled(true);
+            user.setStatus(true);
             user.setVerificationCode(null);
             userService.save(user);
         }
